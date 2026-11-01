@@ -40,44 +40,89 @@ const server = http.createServer((request, response) => {
                 response.end();
             }
         });
-    } else if (request.url == "/clientes/cadastrar" && request.method == "POST") {
+    } else if (request.method == "GET" && request.url == "/clientes/listar") {
+
+        const sql = "SELECT * FROM Cliente ORDER BY nome";
+
+        con.query(sql, (err, result) => {
+            if (err) {
+                response.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+                response.end(JSON.stringify({ erro: err.message }));
+                return;
+            }
+
+            response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            response.end(JSON.stringify(result));
+        });
+
+    } else if (request.method == "POST" &&
+        (request.url == "/clientes/cadastrar" || request.url == "/clientes/alterar")) {
 
         var form = new formidable.IncomingForm();
 
         form.parse(request, (err, fields, files) => {
 
             if (err) {
-                response.writeHeader(500, { 'Content-Type': 'text/html; charset=utf-8' });
+                response.writeHead(500);
                 response.end("Erro ao processar formulário.");
                 return;
             }
 
-            const nome = fields.nome[0];
-            const cpf = fields.cpf[0];
-            const endereco = fields.endereco[0];
-            const telefone = fields.telefone[0];
-            const email = fields.email[0];
+            // Compatibilidade com os valores retornados pelo Formidable
+            const campo = (nome) => {
+                const valor = fields[nome];
+                return Array.isArray(valor) ? valor[0] : valor;
+            };
 
-            const sql = `
-            INSERT INTO Cliente (nome, cpf, endereco, telefone, email)
-            VALUES (?, ?, ?, ?, ?)
-        `;
+            const nome = campo("nome");
+            const cpf = campo("cpf");
+            const endereco = campo("endereco");
+            const telefone = campo("telefone");
+            const email = campo("email");
 
-            con.query(sql, [nome, cpf, endereco, telefone, email], (err, result) => {
+            if (request.url == "/clientes/cadastrar") {
 
-                if (err) {
-                    console.log(err);
+                const sql = `
+                    INSERT INTO Cliente (nome, cpf, endereco, telefone, email)
+                    VALUES (?, ?, ?, ?, ?)
+                `;
 
-                    response.writeHeader(500, { 'Content-Type': 'text/html; charset=utf-8' });
-                    response.end("Erro ao cadastrar cliente: " + err.message);
-                    return;
-                }
+                con.query(sql, [nome, cpf, endereco, telefone, email], (err, result) => {
+                    if (err) {
+                        response.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+                        response.end("Erro ao cadastrar cliente: " + err.message);
+                        return;
+                    }
 
-                console.log("Cliente cadastrado. ID: " + result.insertId);
+                    console.log("Cliente cadastrado. ID: " + result.insertId);
 
-                response.writeHeader(200, { 'Content-Type': 'text/html; charset=utf-8' });
-                response.end("Cliente cadastrado com sucesso! <a href='/index.html'>Voltar ao início</a>");
-            });
+                    response.writeHead(303, { Location: '/clientes.html' });
+                    response.end();
+                });
+
+            } else {
+
+                const idCliente = campo("idCliente");
+
+                const sql = `
+                    UPDATE Cliente
+                    SET nome = ?, cpf = ?, endereco = ?, telefone = ?, email = ?
+                    WHERE idCliente = ?
+                `;
+
+                con.query(sql, [nome, cpf, endereco, telefone, email, idCliente], (err, result) => {
+                    if (err) {
+                        response.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+                        response.end("Erro ao alterar cliente: " + err.message);
+                        return;
+                    }
+
+                    console.log("Cliente alterado. ID: " + idCliente);
+
+                    response.writeHead(303, { Location: '/clientes.html' });
+                    response.end();
+                });
+            }
         });
     } else {
         var diretorio = __dirname;
