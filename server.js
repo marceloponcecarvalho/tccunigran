@@ -8,27 +8,16 @@ const S = require('string');
 var mysql = require('mysql2');
 var formidable = require('formidable');
 
-var con = mysql.createConnection({
-    host: "localhost",
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-    database: "manutencao_piscinas"
-});
+// conexao ao banco de dados passou ao arquivo conexao.js
+const con = require('./database/conexao');
 
-con.connect(function (err) {
-    if (err) throw err;
-    console.log("Conectado!");
-});
 
-con.query('SELECT * FROM Cliente', function (err, result) {
-    if (err) throw err;
-    console.log("Result: " + result);
-});
-
+// criar o servidor http
 const server = http.createServer((request, response) => {
 
     console.log("Requisição:", request.method, request.url);
 
+// pagina de login - template para teste futuro
     if (request.url == "/login") {
         var form = new formidable.IncomingForm();
         form.parse(request, (err, fields, files) => {
@@ -42,6 +31,10 @@ const server = http.createServer((request, response) => {
                 response.end();
             }
         });
+
+// rotas para consulta e alteração dos clientes e piscinas no SQL
+
+// Criar e Alterar cliente e piscina
     } else if (request.method == "POST" &&
         request.url == "/clientes/salvar") {
 
@@ -62,7 +55,8 @@ const server = http.createServer((request, response) => {
 
             const idCliente = campo("idCliente");
             const nome = campo("nome");
-            // utiliza apenas os numeros recebidos
+
+            // utiliza apenas os numeros recebidos no campo CPF - complementa a verificação que já temos no html
             const cpf = (campo("cpf") || "").replace(/\D/g, "");
             const endereco = campo("endereco");
             const telefone = campo("telefone");
@@ -72,6 +66,7 @@ const server = http.createServer((request, response) => {
             const lado1 = Number(campo("lado1"));
             const lado2 = Number(campo("lado2"));
 
+            // confere a quantidade de digitos do CPF e retornar erro sem continuar a gravação - também complementa a verificação que já temos no html
             if (![11, 14].includes(cpf.length)) {
                 response.writeHead(400, {
                     'Content-Type': 'application/json; charset=utf-8'
@@ -83,9 +78,7 @@ const server = http.createServer((request, response) => {
                 return;
             }
 
-
-
-            // Incluida a função para negritar o campo que deve ser corrigido, retornando a mensagem para tratamento pelo html
+            // confereme se os campos sao validos
             const camposInvalidos = [];
 
             if (!nome) camposInvalidos.push("nome");
@@ -113,6 +106,7 @@ const server = http.createServer((request, response) => {
                     'Content-Type': 'application/json; charset=utf-8'
                 });
 
+            // Incluida a função para negritar o campo que deve ser corrigido, retornando a mensagem para tratamento pelo html
                 response.end(JSON.stringify({
                     erro: "Existem campos que precisam ser corrigidos.",
                     camposInvalidos
@@ -140,6 +134,7 @@ const server = http.createServer((request, response) => {
             }
             */
 
+            // acessa a conexao com o Banco de Dados - transferir depois para clientes.js
             const db = con.promise();
 
             try {
@@ -216,6 +211,9 @@ const server = http.createServer((request, response) => {
                 }));
             }
         });
+
+
+    // Rota para pesquisar cliente por cpf 
     } else if (request.method == "GET" &&
         request.url.startsWith("/clientes/buscar")) {
 
@@ -238,6 +236,7 @@ const server = http.createServer((request, response) => {
         WHERE c.cpf = ?
     `;
 
+        // - transferir operações de BD para clientes.js
         con.query(sql, [cpf], (err, result) => {
             if (err) {
                 console.log("Erro ao consultar cliente:", err);
@@ -259,6 +258,7 @@ const server = http.createServer((request, response) => {
             response.end(JSON.stringify(result[0] || null));
         });
 
+    // Rota para listar todos os clientes
     } else if (request.method == "GET" &&
         url.parse(request.url).pathname == "/clientes/listar") {
 
@@ -270,7 +270,8 @@ const server = http.createServer((request, response) => {
                     LEFT JOIN Piscina p ON p.idCliente = c.idCliente
                     ORDER BY c.nome
                     `;
-
+        
+        // - transferir operações de BD para clientes.js
         con.query(sql, (err, result) => {
 
                 if (err) {
@@ -294,6 +295,7 @@ const server = http.createServer((request, response) => {
             }
         );
 
+    // caminho para index.html ou outro
     } else {
         var diretorio = __dirname;
         var q = url.parse(request.url, true);
