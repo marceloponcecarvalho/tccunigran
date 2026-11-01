@@ -62,7 +62,8 @@ const server = http.createServer((request, response) => {
 
             const idCliente = campo("idCliente");
             const nome = campo("nome");
-            const cpf = campo("cpf");
+            // utiliza apenas os numeros recebidos
+            const cpf = (campo("cpf") || "").replace(/\D/g, "");
             const endereco = campo("endereco");
             const telefone = campo("telefone");
             const email = campo("email");
@@ -71,6 +72,56 @@ const server = http.createServer((request, response) => {
             const lado1 = Number(campo("lado1"));
             const lado2 = Number(campo("lado2"));
 
+            if (![11, 14].includes(cpf.length)) {
+                response.writeHead(400, {
+                    'Content-Type': 'application/json; charset=utf-8'
+                });
+
+                response.end(JSON.stringify({
+                    erro: "CPF/CNPJ inválido: a quantidade de dígitos deve ser 11 para CPF ou 14 para CNPJ."
+                }));
+                return;
+            }
+
+
+
+            // Incluida a função para negritar o campo que deve ser corrigido, retornando a mensagem para tratamento pelo html
+            const camposInvalidos = [];
+
+            if (!nome) camposInvalidos.push("nome");
+            if (!cpf) camposInvalidos.push("cpf");
+            if (!endereco) camposInvalidos.push("endereco");
+
+            if (![11, 14].includes(cpf.length)) {
+                camposInvalidos.push("cpf");
+            }
+
+            if (!Number.isFinite(profundidade) || profundidade <= 0) {
+                camposInvalidos.push("profundidade");
+            }
+
+            if (!Number.isFinite(lado1) || lado1 <= 0) {
+                camposInvalidos.push("lado1");
+            }
+
+            if (!Number.isFinite(lado2) || lado2 <= 0) {
+                camposInvalidos.push("lado2");
+            }
+
+            if (camposInvalidos.length > 0) {
+                response.writeHead(400, {
+                    'Content-Type': 'application/json; charset=utf-8'
+                });
+
+                response.end(JSON.stringify({
+                    erro: "Existem campos que precisam ser corrigidos.",
+                    camposInvalidos
+                }));
+
+                return;
+            }
+
+            /*
             const dadosInvalidos =
                 !nome || !cpf || !endereco ||
                 !Number.isFinite(profundidade) || profundidade <= 0 ||
@@ -87,6 +138,7 @@ const server = http.createServer((request, response) => {
                 }));
                 return;
             }
+            */
 
             const db = con.promise();
 
@@ -168,7 +220,7 @@ const server = http.createServer((request, response) => {
         request.url.startsWith("/clientes/buscar")) {
 
         const q = url.parse(request.url, true);
-        const cpf = q.query.cpf;
+        const cpf = (q.query.cpf || "").replace(/\D/g, "");
 
         const sql = `
         SELECT
@@ -187,38 +239,15 @@ const server = http.createServer((request, response) => {
     `;
 
         con.query(sql, [cpf], (err, result) => {
-            response.writeHead(200, {
-                'Content-Type': 'application/json; charset=utf-8'
-            });
-
             if (err) {
-                response.end(JSON.stringify({ erro: err.message }));
-                return;
-            }
-
-            response.end(JSON.stringify(result[0] || null));
-        });
-
-} else if (request.method == "GET" &&
-    url.parse(request.url).pathname == "/clientes/listar") {
-
-    console.log("ROTA LISTAR CLIENTES ACESSADA!");
-
-    con.query(
-        `SELECT idCliente, nome, cpf, endereco, telefone, email
-         FROM Cliente
-         ORDER BY nome`,
-        (err, result) => {
-
-            if (err) {
-                console.log(err);
+                console.log("Erro ao consultar cliente:", err);
 
                 response.writeHead(500, {
                     'Content-Type': 'application/json; charset=utf-8'
                 });
 
                 response.end(JSON.stringify({
-                    erro: "Erro ao listar clientes."
+                    erro: "Erro ao consultar o banco de dados."
                 }));
                 return;
             }
@@ -227,9 +256,43 @@ const server = http.createServer((request, response) => {
                 'Content-Type': 'application/json; charset=utf-8'
             });
 
-            response.end(JSON.stringify(result));
-        }
-    );
+            response.end(JSON.stringify(result[0] || null));
+        });
+
+    } else if (request.method == "GET" &&
+        url.parse(request.url).pathname == "/clientes/listar") {
+
+        console.log("ROTA LISTAR CLIENTES ACESSADA!");
+
+        const sql = `SELECT c.idCliente, c.nome, c.cpf, c.endereco, c.telefone, c.email,
+                    ROUND(p.profundidade * p.lado1 * p.lado2, 2) AS volume
+                    FROM Cliente c
+                    LEFT JOIN Piscina p ON p.idCliente = c.idCliente
+                    ORDER BY c.nome
+                    `;
+
+        con.query(sql, (err, result) => {
+
+                if (err) {
+                    console.log(err);
+
+                    response.writeHead(500, {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    });
+
+                    response.end(JSON.stringify({
+                        erro: "Erro ao listar clientes."
+                    }));
+                    return;
+                }
+
+                response.writeHead(200, {
+                    'Content-Type': 'application/json; charset=utf-8'
+                });
+
+                response.end(JSON.stringify(result));
+            }
+        );
 
     } else {
         var diretorio = __dirname;

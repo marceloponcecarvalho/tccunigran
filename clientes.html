@@ -33,12 +33,12 @@
 
             <div class="campo">
                 <label>Endereço:</label>
-                <input type="text" name="endereco">
+                <input type="text" name="endereco" required>
             </div>
 
             <div class="campo">
                 <label for="telefone">Telefone:</label>
-                <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
+                <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000">
             </div>
 
             <div class="campo">
@@ -49,19 +49,24 @@
 
             <h3>Dimensões da piscina</h3>
 
-            <label>Profundidade:</label>
+            <label>Profundidade (metros):</label>
             <input type="number" name="profundidade" step="0.01" min="0.01" required>
 
-            <label>Tamanho do lado 1:</label>
+            <label>Tamanho do lado 1 (metros):</label>
             <input type="number" name="lado1" step="0.01" min="0.01" required>
 
-            <label>Tamanho do lado 2:</label>
+            <label>Tamanho do lado 2 (metros):</label>
             <input type="number" name="lado2" step="0.01" min="0.01" required>
 
             <div class="botoes">
                 <button type="button" class="voltar" onclick="window.location.href='index.html'">
                     Voltar
                 </button>
+
+                <button type="button" onclick="limparFormulario()">
+                    Limpar
+                </button>
+
                 <button type="submit">Salvar</button>
             </div>
 
@@ -72,12 +77,12 @@
         <table border="1" cellpadding="8" cellspacing="0" width="100%">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nome</th>
                     <th>CPF</th>
                     <th>Endereço</th>
                     <th>Telefone</th>
                     <th>E-mail</th>
+                    <th>Volume Piscina (m³)</th>
                     <th>Ação</th>
                 </tr>
             </thead>
@@ -90,22 +95,51 @@
 
     </main>
     <script>
+
+        // Criei o const form para chamar ao final e tratar o negrito dos campos que estavam errados
+        function limparFormulario() {
+            const form = document.getElementById("formCliente");
+
+            form.reset();
+            document.getElementById("idCliente").value = "";
+
+            form.querySelectorAll("input").forEach(campo => {
+                campo.style.fontWeight = "normal";
+                campo.style.border = "";
+            });
+
+            const botaoSalvar = form.querySelector("button[type='submit']");
+            botaoSalvar.textContent = "Salvar";
+        }
+
+        // Ajustei a função para validar a quantidade de digitos do cpf ou cnpj
+        // A verificação estava sendo feita apenas no server.js antes de gravar e consultar o BD 
+        // mas permitia o retorno de dados invalido por erro do usuario
+
         async function buscarCliente() {
             const cpf = document.getElementById("cpf").value.trim();
+            const cpfNumeros = cpf.replace(/\D/g, "");
 
             if (!cpf) {
                 alert("Informe o CPF/CNPJ.");
                 return;
             }
 
+            // Chama a função para valirdar o CPF
+            if (!validarCpfCnpj()) {
+                alert(document.getElementById("cpf").validationMessage);
+                destacarCampo("cpf");
+                return;
+            }
+
             try {
                 const resposta = await fetch(
-                    "/clientes/buscar?cpf=" + encodeURIComponent(cpf)
+                    "/clientes/buscar?cpf=" + encodeURIComponent(cpfNumeros)
                 );
 
                 const cliente = await resposta.json();
 
-                if (cliente.erro) {
+                if (!resposta.ok) {
                     alert(cliente.erro);
                     return;
                 }
@@ -125,14 +159,16 @@
                     return;
                 }
 
+                // Preenche os dados do cliente encontrado
                 document.getElementById("idCliente").value = cliente.idCliente;
 
-                document.querySelector("[name=nome]").value = cliente.nome;
-                document.querySelector("[name=cpf]").value = cliente.cpf;
-                document.querySelector("[name=endereco]").value = cliente.endereco;
-                document.querySelector("[name=telefone]").value = cliente.telefone;
-                document.querySelector("[name=email]").value = cliente.email;
+                document.querySelector("[name=nome]").value = cliente.nome || "";
+                document.querySelector("[name=cpf]").value = cliente.cpf || "";
+                document.querySelector("[name=endereco]").value = cliente.endereco || "";
+                document.querySelector("[name=telefone]").value = cliente.telefone || "";
+                document.querySelector("[name=email]").value = cliente.email || "";
 
+                // Preenche as dimensões da piscina
                 document.querySelector("[name=profundidade]").value =
                     cliente.profundidade ?? "";
 
@@ -142,13 +178,14 @@
                 document.querySelector("[name=lado2]").value =
                     cliente.lado2 ?? "";
 
-                alert("Cliente encontrado! Código: " + cliente.idCliente);
+                alert("Carregados os Dados do cliente: " + cliente.nome);
 
             } catch (erro) {
                 alert("Erro ao consultar cliente.");
                 console.error(erro);
             }
         }
+
         async function carregarClientes() {
             try {
                 const resposta = await fetch("/clientes/listar");
@@ -171,12 +208,16 @@
                         linha.appendChild(celula);
                     };
 
-                    adicionarCelula(cliente.idCliente);
                     adicionarCelula(cliente.nome);
                     adicionarCelula(cliente.cpf);
                     adicionarCelula(cliente.endereco);
                     adicionarCelula(cliente.telefone);
                     adicionarCelula(cliente.email);
+                    adicionarCelula(
+                        cliente.volume !== null
+                            ? Number(cliente.volume).toFixed(2) + " m³"
+                            : "Não informado"
+                    );
 
                     const celulaAcao = document.createElement("td");
                     const botao = document.createElement("button");
@@ -214,8 +255,16 @@
 
                 const resultado = await resposta.json();
 
+                // Trata a resposta para negritar o campo que deve ser corrigido.
                 if (!resposta.ok) {
                     alert(resultado.erro);
+
+                    if (resultado.camposInvalidos) {
+                        resultado.camposInvalidos.forEach(campo => {
+                            destacarCampo(campo);
+                        });
+                    }
+
                     return;
                 }
 
@@ -225,6 +274,12 @@
                 this.reset();
                 document.getElementById("idCliente").value = "";
 
+                // Trata a resposta do servidor para negritar o campo que deve ser corrigido.
+                this.querySelectorAll("input").forEach(campo => {
+                    campo.style.fontWeight = "normal";
+                    campo.style.border = "";
+                });
+
                 await carregarClientes();
 
             } catch (erro) {
@@ -232,6 +287,39 @@
                 console.error(erro);
             }
         });
+
+        // Incluida a função para negritar o campo que deve ser corrigido.
+        function destacarCampo(nome) {
+            const campo = document.querySelector(`[name="${nome}"]`);
+
+            if (campo) {
+                campo.style.fontWeight = "bold";
+                campo.style.border = "2px solid red";
+                campo.focus();
+            }
+        }
+        const form = document.getElementById("formCliente");
+
+        // Incluida função para validar o CPF/CNPJ
+        function validarCpfCnpj() {
+            const campo = document.getElementById("cpf");
+            const digitos = campo.value.replace(/\D/g, "");
+
+            const valido = digitos.length === 11 || digitos.length === 14;
+
+            campo.setCustomValidity(
+                valido ? "" : "Informe um CPF com 11 dígitos ou CNPJ com 14 dígitos."
+            );
+
+            return valido;
+        }
+
+        // Valida enquanto o usuário digita
+        document.getElementById("cpf").addEventListener("input", validarCpfCnpj);
+
+        // Validação inicial
+        validarCpfCnpj();
+
         carregarClientes();
     </script>
 
