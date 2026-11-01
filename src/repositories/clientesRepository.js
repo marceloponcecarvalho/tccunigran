@@ -1,119 +1,117 @@
-const con = require('./conexao');
+const con = require('../config/database');
 
-// Cadastrar ou atualizar cliente e piscina
-async function salvar(dados) {
+// Criar e Alterar cliente e piscina
+async function salvar(idCliente, nome, cpf, endereco, telefone, email, profundidade, lado1, lado2) {
     const db = con.promise();
 
-    const {
-        idCliente,
-        nome,
-        cpf,
-        endereco,
-        telefone,
-        email,
-        profundidade,
-        lado1,
-        lado2
-    } = dados;
-
-    const connection = await db.getConnection();
-
     try {
-        await connection.beginTransaction();
+        await db.beginTransaction();
 
-        let id = idCliente;
+        let id;
 
         if (idCliente) {
-            const [resultado] = await connection.query(
-                `UPDATE Cliente
-                 SET nome = ?, cpf = ?, endereco = ?,
-                     telefone = ?, email = ?
-                 WHERE idCliente = ?`,
+            // Atualiza cliente existente
+            const [resultado] = await db.execute(
+                `UPDATE Cliente SET nome = ?, cpf = ?, endereco = ?, telefone = ?, email = ? WHERE idCliente = ?`,
                 [nome, cpf, endereco, telefone, email, idCliente]
             );
 
             if (resultado.affectedRows === 0) {
                 throw new Error("Cliente não encontrado.");
             }
+
+            id = idCliente;
+
         } else {
-            const [resultado] = await connection.query(
-                `INSERT INTO Cliente
-                 (nome, cpf, endereco, telefone, email)
-                 VALUES (?, ?, ?, ?, ?)`,
+            // Cadastra novo cliente
+            const [resultado] = await db.execute(
+                `INSERT INTO Cliente (nome, cpf, endereco, telefone, email) VALUES (?, ?, ?, ?, ?)`,
                 [nome, cpf, endereco, telefone, email]
             );
 
             id = resultado.insertId;
         }
 
-        const [piscinas] = await connection.query(
-            `SELECT idPiscina FROM Piscina WHERE idCliente = ?`,
+        // Verifica se o cliente já possui piscina
+        const [piscinas] = await db.execute(
+            "SELECT idPiscina FROM Piscina WHERE idCliente = ?",
             [id]
         );
 
         if (piscinas.length > 0) {
-            await connection.query(
-                `UPDATE Piscina
-                 SET profundidade = ?, lado1 = ?, lado2 = ?
-                 WHERE idCliente = ?`,
+            await db.execute(
+                `UPDATE Piscina SET profundidade = ?, lado1 = ?, lado2 = ? WHERE idCliente = ?`,
                 [profundidade, lado1, lado2, id]
             );
         } else {
-            await connection.query(
-                `INSERT INTO Piscina
-                 (profundidade, lado1, lado2, idCliente)
-                 VALUES (?, ?, ?, ?)`,
+            await db.execute(
+                `INSERT INTO Piscina (profundidade, lado1, lado2, idCliente) VALUES (?, ?, ?, ?)`,
                 [profundidade, lado1, lado2, id]
             );
         }
 
-        await connection.commit();
+        await db.commit();
 
-        return {
-            sucesso: true,
-            idCliente: id,
-            mensagem: "Cliente salvo com sucesso!"
-        };
+        return id;
 
     } catch (erro) {
-        await connection.rollback();
+        await db.rollback();
         throw erro;
-
-    } finally {
-        connection.release();
     }
 }
 
-// Buscar cliente pelo CPF/CNPJ
-function buscarPorCpf(cpf, callback) {
-    const sql = `
-        SELECT c.idCliente, c.nome, c.cpf, c.endereco,
-               c.telefone, c.email,
-               p.profundidade, p.lado1, p.lado2
-        FROM Cliente c
-        LEFT JOIN Piscina p ON p.idCliente = c.idCliente
-        WHERE c.cpf = ?
-    `;
+// Buscar cliente pelo CPF
+function buscar(cpf) {
+    // Promises para o controller poder utilizar async/await
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT
+                c.idCliente,
+                c.nome,
+                c.cpf,
+                c.endereco,
+                c.telefone,
+                c.email,
+                p.profundidade,
+                p.lado1,
+                p.lado2
+            FROM Cliente c
+            LEFT JOIN Piscina p ON p.idCliente = c.idCliente
+            WHERE c.cpf = ?
+        `;
 
-    con.query(sql, [cpf], callback);
+        con.query(sql, [cpf], (err, result) => {
+            if (err) {
+                return reject(err);
+            }
+
+            resolve(result[0] || null);
+        });
+    });
 }
 
-// Listar clientes e volume das piscinas
-function listar(callback) {
-    const sql = `
-        SELECT c.idCliente, c.nome, c.cpf, c.endereco,
-               c.telefone, c.email,
-               ROUND(p.profundidade * p.lado1 * p.lado2, 2) AS volume
-        FROM Cliente c
-        LEFT JOIN Piscina p ON p.idCliente = c.idCliente
-        ORDER BY c.nome
-    `;
+// Listar todos os clientes
+function listar() {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT c.idCliente, c.nome, c.cpf, c.endereco, c.telefone, c.email,
+                        ROUND(p.profundidade * p.lado1 * p.lado2, 2) AS volume
+                        FROM Cliente c
+                        LEFT JOIN Piscina p ON p.idCliente = c.idCliente
+                        ORDER BY c.nome
+                        `;
 
-    con.query(sql, callback);
+        con.query(sql, (err, result) => {
+            if (err) {
+                return reject(err);
+            }
+
+            resolve(result);
+        });
+    });
 }
 
 module.exports = {
     salvar,
-    buscarPorCpf,
+    buscar,
     listar
 };
