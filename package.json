@@ -1,0 +1,31 @@
+{
+  "name": "tccunigran",
+  "version": "1.0.0",
+  "description": "Programa de Manutencao de Piscinas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marceloponcecarvalho/tccunigran.git"
+  },
+  "author": "Marcelo Ponce Carvalho",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marceloponcecarvalho/tccunigran/issues"
+  },
+  "homepage": "https://github.com/marceloponcecarvalho/tccunigran#readme",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "dotenv": "^18.0.9",
+    "formidable": "^3.5.4",
+    "lowdb": "^7.0.1",
+    "moment": "^2.31.0",
+    "mysql2": "^3.24.6",
+    "string": "^3.3.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
