@@ -11,6 +11,7 @@ const con = require('./src/config/database');
 
 // importar rotas (movidas para arquivo separado)
 const clientesRoutes = require('./src/routes/clientesRoutes');
+const produtosRoutes = require('./src/routes/produtosRoutes');
 
 // criar o servidor http
 const app = express();
@@ -60,6 +61,9 @@ async function processarFormulario(req) {
 // Rota para pesquisar cliente por cpf 
 // Rota para listar todos os clientes
 app.use('/clientes', clientesRoutes);
+
+// Rotas de produtos
+app.use('/produtos', produtosRoutes);
 
 // Rota não encontrada.
 app.use((req, res) => {

@@ -12,9 +12,8 @@ USE `manutencao_piscinas`;
 
 INSERT INTO `Produto` (`tipo`, `quantidade`) VALUES
   ('Cloro', 0),
-  ('Redutor de pH', 0),
   ('Elevador de pH', 0),
-  ('Redutor de alcalinidade', 0),
+  ('Redutor de alcalinidade e pH', 0),
   ('Elevador de alcalinidade', 0);
 
 COMMIT;

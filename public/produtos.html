@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Produtos</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Manutenção de Piscinas - Gerenciamento de Produtos</h1>
+    </header>
+
+    <main>
+        <form id="formProduto">
+
+            <h3>Dados do Produto</h3>
+
+            <input type="hidden" name="idProduto" id="idProduto">
+
+            <div class="campo">
+                <label for="tipo">Tipo de produto:</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="">Selecione um produto</option>
+                    <option value="Cloro">Cloro</option>
+                    <option value="Redutor de alcalinidade e pH">Redutor de alcalinidade e pH</option>
+                    <option value="Elevador de pH">Elevador de pH</option>
+                    <option value="Elevador de alcalinidade">Elevador de alcalinidade</option>
+                </select>
+                <button type="button" onclick="buscarProduto()">Consultar</button>
+            </div>
+
+            <div class="campo">
+                <label for="quantidadeAtual">Quantidade atual em estoque:</label>
+                <input type="text" id="quantidadeAtual" disabled>
+            </div>
+
+            <div class="campo">
+                <label for="embalagem">Apresentação:</label>
+                <select id="embalagem" name="embalagem" required disabled>
+                    <option value="">Selecione uma apresentação</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="quantidade">Quantidade de embalagens:</label>
+                <input type="number" id="quantidade" name="quantidade" min="1" step="1" required>
+            </div>
+
+            <div class="botoes">
+                <button type="button" class="voltar" onclick="window.location.href='index.html'">
+                    Voltar
+                </button>
+
+                <button type="button" onclick="limparFormulario()">
+                    Limpar
+                </button>
+
+                <button type="submit">Adicionar ao estoque</button>
+            </div>
+
+        </form>
+
+        <h2>Produtos cadastrados</h2>
+
+        <table border="1" cellpadding="8" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade em estoque</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="listaProdutos">
+            </tbody>
+        </table>
+
+    </main>
+
+    <script src="/js/produtos.js" defer></script>
+
+</body>
+
+</html>
