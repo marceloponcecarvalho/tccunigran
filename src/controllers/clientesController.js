@@ -26,12 +26,8 @@ async function salvar(req, res) {
     const camposInvalidos = [];
 
     if (!nome) camposInvalidos.push("nome");
-    if (!cpf) camposInvalidos.push("cpf");
+    
     if (!endereco) camposInvalidos.push("endereco");
-
-    if (![11, 14].includes(cpf.length)) {
-        camposInvalidos.push("cpf");
-    }
 
     if (!Number.isFinite(profundidade) || profundidade <= 0) {
         camposInvalidos.push("profundidade");

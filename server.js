@@ -71,6 +71,10 @@ app.use((req, res) => {
 });
 
 // Inicialização do servidor.
-app.listen(PORT, () => {
-    console.log(`Servidor Express executando em http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Servidor Express executando em http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;
