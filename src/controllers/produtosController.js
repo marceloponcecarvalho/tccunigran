@@ -1,9 +1,9 @@
-const produtosRepository = require('../repositories/produtosRepository');
+const produtosService = require('../services/produtosService');
 
 // Listar todos os produtos
 async function listar(req, res) {
     try {
-        const produtos = await produtosRepository.listar();
+        const produtos = await produtosService.listar();
         return res.json(produtos);
     } catch (erro) {
         console.error('Erro ao listar produtos:', erro);
@@ -18,22 +18,16 @@ async function buscar(req, res) {
     try {
         const { tipo } = req.query;
 
-        if (!tipo || !tipo.trim()) {
-            return res.status(400).json({
-                erro: 'Informe o tipo do produto.'
-            });
-        }
-
-        const produto = await produtosRepository.buscar(tipo.trim());
-
-        if (!produto) {
-            return res.status(404).json({
-                erro: 'Produto não encontrado.'
-            });
-        }
+        const produto = await produtosService.buscar(tipo);
 
         return res.json(produto);
     } catch (erro) {
+        if (erro.statusCode === 400 || erro.statusCode === 404) {
+            return res.status(erro.statusCode).json({
+                erro: erro.message
+            });
+        }
+
         console.error('Erro ao buscar produto:', erro);
         return res.status(500).json({
             erro: 'Erro ao consultar produto.'
@@ -44,37 +38,18 @@ async function buscar(req, res) {
 // Atualizar quantidade em estoque
 async function atualizar(req, res) {
     try {
-        const { idProduto, quantidade } = req.body;
-
-        if (
-            !Number.isInteger(Number(idProduto)) ||
-            Number(idProduto) <= 0 ||
-            quantidade === undefined ||
-            quantidade === null ||
-            quantidade === '' ||
-            !Number.isInteger(Number(quantidade)) ||
-            Number(quantidade) <= 0
-        ) {
-            return res.status(400).json({
-                erro: 'Informe um produto válido e uma quantidade inteira maior que zero.'
-            });
-        }
-
-        const resultado = await produtosRepository.atualizar(
-            Number(idProduto),
-            Number(quantidade)
-        );
-
-        if (resultado.affectedRows === 0) {
-            return res.status(404).json({
-                erro: 'Produto não encontrado.'
-            });
-        }
+        await produtosService.atualizar(req.body);
 
         return res.json({
             mensagem: 'Estoque atualizado com sucesso.'
         });
     } catch (erro) {
+        if (erro.statusCode === 400 || erro.statusCode === 404) {
+            return res.status(erro.statusCode).json({
+                erro: erro.message
+            });
+        }
+
         console.error('Erro ao atualizar produto:', erro);
         return res.status(500).json({
             erro: 'Erro ao atualizar quantidade do produto.'

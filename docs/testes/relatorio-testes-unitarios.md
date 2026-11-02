@@ -54,6 +54,8 @@ Esta seção registra os resultados das execuções realizadas durante o desenvo
 | 02/11/2026 | Gerenciamento de clientes e produtos, rotas e servidor Express — testes unitários | 79 | 0 |
 | 02/11/2026 | Integração do gerenciamento de clientes com o banco de dados | 7 | 0 |
 | 02/11/2026 | Execução conjunta dos testes unitários e de integração | 86 | 0 |
+| 02/11/2026 | Execução dos testes de integração após a refatoração de clientes e produtos | 7 | 0 |
+| 02/11/2026 | Execução conjunta após as refatorações dos serviços de clientes e produtos | 126 | 0 |
 
 Os resultados serão atualizados conforme novos casos de uso forem implementados e testados.
 
@@ -68,55 +70,34 @@ Os resultados apresentados nesta seção correspondem aos testes unitários. Os 
 **Data:** 02/11/2026
 
 ```text
-PASS  tests/unit/clientesRoutes.test.js
-PASS  tests/unit/produtosRoutes.test.js
-PASS  tests/unit/clientesController.test.js
-PASS  tests/unit/clientesRepository.test.js
-PASS  tests/unit/produtosController.test.js
-PASS  tests/unit/produtosRepository.test.js
-PASS  tests/unit/produtos.test.js
-PASS  tests/unit/server.test.js
-
 -----------------------------|---------|----------|---------|---------|-------------------
-File                         | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+File                         | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
 -----------------------------|---------|----------|---------|---------|-------------------
-All files                    |   98.68 |     98.5 |   95.83 |   98.66 |
-tccunigran                   |   89.47 |       75 |      50 |   89.47 |
- server.js                   |   89.47 |       75 |      50 |   89.47 | 75-76
-tccunigran/src/controllers   |     100 |      100 |     100 |     100 |
- clientesController.js       |     100 |      100 |     100 |     100 |
- produtosController.js       |     100 |      100 |     100 |     100 |
-tccunigran/src/repositories  |     100 |      100 |     100 |     100 |
- clientesRepository.js       |     100 |      100 |     100 |     100 |
- produtosRepository.js       |     100 |      100 |     100 |     100 |
-tccunigran/src/routes        |     100 |      100 |     100 |     100 |
- clientesRoutes.js           |     100 |      100 |     100 |     100 |
- produtosRoutes.js           |     100 |      100 |     100 |     100 |
+All files                    |   98.91 |    98.76 |   96.66 |    98.9 |                   
+ tccunigran                  |   89.47 |       75 |      50 |   89.47 |                   
+  server.js                  |   89.47 |       75 |      50 |   89.47 | 75-76             
+ tccunigran/src/controllers  |     100 |      100 |     100 |     100 |                   
+  clientesController.js      |     100 |      100 |     100 |     100 |                   
+  produtosController.js      |     100 |      100 |     100 |     100 |                   
+ tccunigran/src/repositories |     100 |      100 |     100 |     100 |                   
+  clientesRepository.js      |     100 |      100 |     100 |     100 |                   
+  produtosRepository.js      |     100 |      100 |     100 |     100 |                   
+ tccunigran/src/routes       |     100 |      100 |     100 |     100 |                   
+  clientesRoutes.js          |     100 |      100 |     100 |     100 |                   
+  produtosRoutes.js          |     100 |      100 |     100 |     100 |                   
+ tccunigran/src/services     |     100 |      100 |     100 |     100 |                   
+  clientesService.js         |     100 |      100 |     100 |     100 |                   
+  produtosService.js         |     100 |      100 |     100 |     100 |                   
 -----------------------------|---------|----------|---------|---------|-------------------
 
-Test Suites: 8 passed, 8 total
-Tests:       79 passed, 79 total
+Test Suites: 10 passed, 10 total
+Tests:       119 passed, 119 total
+Snapshots:   0 total
+Time:        1.946 s, estimated 2 s
+Ran all test suites matching tests/unit.
 ```
 
-**Resultado geral da cobertura:**
-
-- Instruções: 98,68%.
-- Ramificações: 98,50%.
-- Funções: 95,83%.
-- Linhas: 98,66%.
-
-A cobertura apresentada corresponde aos arquivos incluídos na instrumentação do Jest nesta execução, não representando necessariamente a cobertura integral de todo o sistema.
-
-### 5.2 Observações sobre a cobertura
-
-O arquivo `server.js` apresentou os seguintes resultados:
-
-- Instruções: 89,47%.
-- Ramificações: 75%.
-- Funções: 50%.
-- Linhas: 89,47%.
-
-As linhas não cobertas correspondem à inicialização do servidor (`app.listen()`), não executada durante os testes automatizados, pois o servidor é importado diretamente pelo Jest.
+As linhas não cobertas no arquivo `server.js` referem-se à inicialização do servidor (`app.listen()`), não executada durante os testes automatizados, pois o servidor é importado diretamente pelo Jest.
 
 ## 6. Casos de uso testados
 
@@ -134,13 +115,17 @@ Foram implementados testes unitários para verificar:
 - Consulta de clientes pelo CPF.
 - Listagem de clientes.
 - Tratamento de erros durante as operações.
+- Normalização de CPF e CNPJ na camada de serviço.
+- Validação dos dados antes de encaminhar a operação ao repository.
+- Normalização do CPF nas consultas.
+- Encaminhamento das operações do controller para o service.
+- Tratamento de erros retornados pela camada de serviço.
 
 **Arquivos envolvidos:**
 
 - `clientesController.js`
+- `clientesService.js`
 - `clientesRepository.js`
-
-**Resultado:** 31 testes aprovados, sem falhas.
 
 ### 6.2 Gerenciamento de produtos — testes unitários
 
@@ -157,10 +142,8 @@ Foram implementados testes unitários para verificar:
 **Arquivos envolvidos:**
 
 - `produtosController.js`
+- `produtosService.js`
 - `produtosRepository.js`
-- Lógica de produtos testada em `produtos.test.js`.
-
-**Resultado:** 36 testes aprovados, sem falhas.
 
 ### 6.3 Rotas de clientes e produtos
 
@@ -180,8 +163,6 @@ Foram implementados testes para verificar o encaminhamento das requisições HTT
 
 **Ferramenta utilizada:** Supertest 7.3.1.
 
-**Resultado:** 6 testes aprovados, sem falhas.
-
 ### 6.4 Servidor Express (`server.js`)
 
 Foram implementados testes para verificar a configuração e o funcionamento geral do servidor Express.
@@ -196,8 +177,6 @@ Foram implementados testes para verificar a configuração e o funcionamento ger
 - Disponibilização de arquivos estáticos da pasta `public`.
 
 **Ferramenta utilizada:** Supertest 7.3.1.
-
-**Resultado:** 6 testes aprovados, sem falhas.
 
 ### 6.5 Integração do gerenciamento de clientes
 
@@ -224,13 +203,9 @@ Os testes utilizam o banco `manutencao_piscinas_test`, mantendo os dados do banc
 
 **Ferramentas utilizadas:** Jest 30.5.2 e Supertest 7.3.1.
 
-**Resultado:** 7 testes aprovados, sem falhas.
-
 ## 7. Considerações finais
 
 Os testes automatizados serão realizados continuamente durante o desenvolvimento do software, acompanhando a conclusão de cada caso de uso.
-
-Na execução conjunta realizada em 02/11/2026, foram aprovados 86 testes automatizados, distribuídos em 9 suítes, sem falhas.
 
 Os resultados registrados neste documento representam o estágio atual dos testes e serão atualizados conforme novas funcionalidades forem implementadas.
 

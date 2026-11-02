@@ -1,4 +1,7 @@
 // Esta tabela tem os tipos de embalagens dos produtos que podem ser compradas
+// Incluido apenas no frontend porque a conversão da quantidade por embalagem na quantidade real é apenas um facilitador para o usuário
+// - Frontend: apresenta as embalagens disponíveis, recebe a quantidade de embalagens e converte o valor para a unidade utilizada pelo estoque.
+// - Backend: recebe a quantidade final, valida se é um número inteiro positivo e realiza a atualização no banco.
 const configuracaoProdutos = {
     "Cloro": {
         unidade: "g",
@@ -203,6 +206,7 @@ document.getElementById("formProduto").addEventListener("submit", async function
         return;
     }
 
+    // O Backend recebe apenas o valor final a ser inserido na tabela. O incremento com base na quantidade atual está sendo feito aqui
     const quantidadeAdicionada =
         Number(embalagem) * Number(quantidadeEmbalagens);
 

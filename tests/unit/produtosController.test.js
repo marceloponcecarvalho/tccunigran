@@ -1,13 +1,18 @@
-
 const assert = require('node:assert/strict');
 
-// Simular conexão com o banco de dados
-jest.mock('../../src/config/database', () => ({
-    query: jest.fn()
+jest.mock('../../src/services/produtosService', () => ({
+    listar: jest.fn(),
+    buscar: jest.fn(),
+    atualizar: jest.fn()
 }));
 
-const produtosRepository = require('../../src/repositories/produtosRepository');
+const produtosService = require('../../src/services/produtosService');
 const produtosController = require('../../src/controllers/produtosController');
+
+beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+});
 
 afterEach(() => {
     jest.restoreAllMocks();
@@ -35,16 +40,50 @@ function criarMocksExpress(dados = {}) {
     return { req, res };
 }
 
-// Testar busca de produto encontrado
-test('buscar deve retornar o produto quando ele existir', async () => {
+// Testar listagem de produtos
+test('listar deve retornar todos os produtos', async () => {
+    const produtosEsperados = [
+        { idProduto: 1, tipo: 'Cloro', quantidade: 5000 },
+        { idProduto: 2, tipo: 'Elevador de pH', quantidade: 3000 }
+    ];
+
+    produtosService.listar.mockResolvedValue(produtosEsperados);
+
+    const { req, res } = criarMocksExpress();
+
+    await produtosController.listar(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.body, produtosEsperados);
+
+    expect(produtosService.listar).toHaveBeenCalledTimes(1);
+});
+
+// Testar erro durante listagem de produtos
+test('listar deve retornar erro 500 quando ocorrer uma falha no serviço', async () => {
+    produtosService.listar.mockRejectedValue(
+        new Error('Erro simulado no banco de dados')
+    );
+
+    const { req, res } = criarMocksExpress();
+
+    await produtosController.listar(req, res);
+
+    assert.equal(res.statusCode, 500);
+    assert.deepEqual(res.body, {
+        erro: 'Erro ao consultar produtos.'
+    });
+});
+
+// Testar busca de produto pelo tipo
+test('buscar deve retornar o produto encontrado', async () => {
     const produtoEsperado = {
         idProduto: 1,
         tipo: 'Cloro',
-        quantidade: 4000
+        quantidade: 5000
     };
 
-    const mockBuscar = jest.spyOn(produtosRepository, 'buscar')
-        .mockResolvedValue(produtoEsperado);
+    produtosService.buscar.mockResolvedValue(produtoEsperado);
 
     const { req, res } = criarMocksExpress({
         query: {
@@ -56,14 +95,36 @@ test('buscar deve retornar o produto quando ele existir', async () => {
 
     assert.equal(res.statusCode, 200);
     assert.deepEqual(res.body, produtoEsperado);
-    expect(mockBuscar).toHaveBeenCalledTimes(1);
-    expect(mockBuscar).toHaveBeenCalledWith('Cloro');
+
+    expect(produtosService.buscar).toHaveBeenCalledTimes(1);
+    expect(produtosService.buscar).toHaveBeenCalledWith('Cloro');
 });
 
-// Testar busca de produto inexistente
+// Testar busca sem informar o tipo do produto
+test('buscar deve retornar erro 400 quando o tipo não for informado', async () => {
+    const erro = new Error('Informe o tipo do produto.');
+    erro.statusCode = 400;
+
+    produtosService.buscar.mockRejectedValue(erro);
+
+    const { req, res } = criarMocksExpress({
+        query: {}
+    });
+
+    await produtosController.buscar(req, res);
+
+    assert.equal(res.statusCode, 400);
+    assert.deepEqual(res.body, {
+        erro: 'Informe o tipo do produto.'
+    });
+});
+
+// Testar produto não encontrado
 test('buscar deve retornar erro 404 quando o produto não existir', async () => {
-    jest.spyOn(produtosRepository, 'buscar')
-        .mockResolvedValue(null);
+    const erro = new Error('Produto não encontrado.');
+    erro.statusCode = 404;
+
+    produtosService.buscar.mockRejectedValue(erro);
 
     const { req, res } = criarMocksExpress({
         query: {
@@ -79,46 +140,39 @@ test('buscar deve retornar erro 404 quando o produto não existir', async () => 
     });
 });
 
-// Testar busca sem informar o tipo
-test('buscar deve retornar erro 400 quando o tipo não for informado', async () => {
-    const { req, res } = criarMocksExpress({
-        query: {}
-    });
+// Testar erro durante busca de produto
+test('buscar deve retornar erro 500 quando ocorrer uma falha no serviço', async () => {
+    produtosService.buscar.mockRejectedValue(
+        new Error('Erro simulado no banco de dados')
+    );
 
-    await produtosController.buscar(req, res);
-
-    assert.equal(res.statusCode, 400);
-    assert.deepEqual(res.body, {
-        erro: 'Informe o tipo do produto.'
-    });
-});
-
-// Testar busca com tipo contendo apenas espaços
-test('buscar deve retornar erro 400 quando o tipo contiver apenas espaços', async () => {
     const { req, res } = criarMocksExpress({
         query: {
-            tipo: '   '
+            tipo: 'Cloro'
         }
     });
 
     await produtosController.buscar(req, res);
 
-    assert.equal(res.statusCode, 400);
+    assert.equal(res.statusCode, 500);
     assert.deepEqual(res.body, {
-        erro: 'Informe o tipo do produto.'
+        erro: 'Erro ao consultar produto.'
     });
 });
 
-// Testar atualização de estoque bem-sucedida
+// Testar atualização de estoque
 test('atualizar deve adicionar quantidade ao estoque com sucesso', async () => {
-    const mockAtualizar = jest.spyOn(produtosRepository, 'atualizar')
-        .mockResolvedValue({ affectedRows: 1 });
+    produtosService.atualizar.mockResolvedValue({
+        affectedRows: 1
+    });
+
+    const dados = {
+        idProduto: 1,
+        quantidade: 1000
+    };
 
     const { req, res } = criarMocksExpress({
-        body: {
-            idProduto: 1,
-            quantidade: 2000
-        }
+        body: dados
     });
 
     await produtosController.atualizar(req, res);
@@ -128,50 +182,70 @@ test('atualizar deve adicionar quantidade ao estoque com sucesso', async () => {
         mensagem: 'Estoque atualizado com sucesso.'
     });
 
-    expect(mockAtualizar).toHaveBeenCalledTimes(1);
-    expect(mockAtualizar).toHaveBeenCalledWith(1, 2000);
+    expect(produtosService.atualizar).toHaveBeenCalledTimes(1);
+    expect(produtosService.atualizar).toHaveBeenCalledWith(dados);
 });
 
-// Testes de validação da atualização de estoque
-const dadosInvalidos = [
+// Testar dados inválidos durante atualização de estoque
+const atualizacoesInvalidas = [
     {
-        descricao: 'ID de produto inválido',
-        body: { idProduto: 'abc', quantidade: 1000 }
+        descricao: 'ID do produto igual a zero',
+        dados: { idProduto: 0, quantidade: 1000 }
     },
     {
-        descricao: 'quantidade zero',
-        body: { idProduto: 1, quantidade: 0 }
+        descricao: 'ID do produto negativo',
+        dados: { idProduto: -1, quantidade: 1000 }
+    },
+    {
+        descricao: 'ID do produto não numérico',
+        dados: { idProduto: 'abc', quantidade: 1000 }
+    },
+    {
+        descricao: 'quantidade igual a zero',
+        dados: { idProduto: 1, quantidade: 0 }
     },
     {
         descricao: 'quantidade negativa',
-        body: { idProduto: 1, quantidade: -1000 }
+        dados: { idProduto: 1, quantidade: -1 }
+    },
+    {
+        descricao: 'quantidade vazia',
+        dados: { idProduto: 1, quantidade: '' }
     },
     {
         descricao: 'quantidade decimal',
-        body: { idProduto: 1, quantidade: 1000.5 }
+        dados: { idProduto: 1, quantidade: 1.5 }
     }
 ];
 
-for (const caso of dadosInvalidos) {
-    test(`atualizar deve rejeitar ${caso.descricao}`, async () => {
-        const mockAtualizar = jest.spyOn(produtosRepository, 'atualizar')
-            .mockResolvedValue({ affectedRows: 1 });
+for (const caso of atualizacoesInvalidas) {
+    test(`atualizar deve retornar erro 400 quando houver ${caso.descricao}`, async () => {
+        const erro = new Error(
+            'Informe um produto válido e uma quantidade inteira maior que zero.'
+        );
+        erro.statusCode = 400;
+
+        produtosService.atualizar.mockRejectedValue(erro);
 
         const { req, res } = criarMocksExpress({
-            body: caso.body
+            body: caso.dados
         });
 
         await produtosController.atualizar(req, res);
 
         assert.equal(res.statusCode, 400);
-        expect(mockAtualizar).not.toHaveBeenCalled();
+        assert.deepEqual(res.body, {
+            erro: 'Informe um produto válido e uma quantidade inteira maior que zero.'
+        });
     });
 }
 
 // Testar atualização de produto inexistente
 test('atualizar deve retornar erro 404 quando o produto não existir', async () => {
-    jest.spyOn(produtosRepository, 'atualizar')
-        .mockResolvedValue({ affectedRows: 0 });
+    const erro = new Error('Produto não encontrado.');
+    erro.statusCode = 404;
+
+    produtosService.atualizar.mockRejectedValue(erro);
 
     const { req, res } = criarMocksExpress({
         body: {
@@ -188,12 +262,11 @@ test('atualizar deve retornar erro 404 quando o produto não existir', async () 
     });
 });
 
-// Testar erro durante atualização no repository
-test('atualizar deve retornar erro 500 quando ocorrer uma falha no repository', async () => {
-    jest.spyOn(produtosRepository, 'atualizar')
-        .mockRejectedValue(new Error('Erro simulado no banco de dados'));
-
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+// Testar erro durante atualização de estoque
+test('atualizar deve retornar erro 500 quando ocorrer uma falha no serviço', async () => {
+    produtosService.atualizar.mockRejectedValue(
+        new Error('Erro simulado no banco de dados')
+    );
 
     const { req, res } = criarMocksExpress({
         body: {
@@ -207,70 +280,5 @@ test('atualizar deve retornar erro 500 quando ocorrer uma falha no repository', 
     assert.equal(res.statusCode, 500);
     assert.deepEqual(res.body, {
         erro: 'Erro ao atualizar quantidade do produto.'
-    });
-});
-
-// Testar listagem de produtos
-test('listar deve retornar todos os produtos', async () => {
-    const produtosEsperados = [
-        { idProduto: 1, tipo: 'Cloro', quantidade: 4000 },
-        { idProduto: 2, tipo: 'Redutor de alcalinidade e pH', quantidade: 2000 }
-    ];
-
-    const mockListar = jest.spyOn(produtosRepository, 'listar')
-        .mockResolvedValue(produtosEsperados);
-
-    const { req, res } = criarMocksExpress();
-
-    await produtosController.listar(req, res);
-
-    assert.equal(res.statusCode, 200);
-    assert.deepEqual(res.body, produtosEsperados);
-    expect(mockListar).toHaveBeenCalledTimes(1);
-});
-
-// Testar erro durante listagem no repository
-test('listar deve retornar erro 500 quando ocorrer uma falha no repository', async () => {
-    const erroEsperado = new Error('Erro simulado no banco de dados');
-
-    jest.spyOn(produtosRepository, 'listar')
-        .mockRejectedValue(erroEsperado);
-
-    const mockConsoleError = jest.spyOn(console, 'error')
-        .mockImplementation(() => {});
-
-    const { req, res } = criarMocksExpress();
-
-    await produtosController.listar(req, res);
-
-    assert.equal(res.statusCode, 500);
-    assert.deepEqual(res.body, {
-        erro: 'Erro ao consultar produtos.'
-    });
-
-    expect(mockConsoleError).toHaveBeenCalledWith(
-        'Erro ao listar produtos:',
-        erroEsperado
-    );
-});
-
-// Testar erro durante busca no repository
-test('buscar deve retornar erro 500 quando ocorrer uma falha no repository', async () => {
-    jest.spyOn(produtosRepository, 'buscar')
-        .mockRejectedValue(new Error('Erro simulado no banco de dados'));
-
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-
-    const { req, res } = criarMocksExpress({
-        query: {
-            tipo: 'Cloro'
-        }
-    });
-
-    await produtosController.buscar(req, res);
-
-    assert.equal(res.statusCode, 500);
-    assert.deepEqual(res.body, {
-        erro: 'Erro ao consultar produto.'
     });
 });
