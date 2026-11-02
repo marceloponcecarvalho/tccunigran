@@ -64,6 +64,7 @@ function atualizarApresentacoes() {
     });
 
     embalagem.disabled = false;
+    embalagem.selectedIndex = 1;
 }
 
 // Buscar produto pelo tipo
@@ -98,7 +99,7 @@ async function buscarProduto() {
         document.getElementById("quantidadeAtual").dataset.quantidade =
             produto.quantidade;
 
-        document.getElementById("quantidade").value = "";
+        document.getElementById("quantidade").value = 1;
 
     } catch (erro) {
         alert("Erro ao consultar produto.");
@@ -161,14 +162,14 @@ async function carregarProdutos() {
     }
 }
 
-// Salvar alteração de estoque
+// Consultar produto automaticamente ao selecionar
 document.getElementById("tipo").addEventListener("change", () => {
     document.getElementById("idProduto").value = "";
     document.getElementById("quantidadeAtual").value = "";
     document.getElementById("quantidadeAtual").dataset.quantidade = "";
     document.getElementById("quantidade").value = "";
 
-    atualizarApresentacoes();
+    buscarProduto();
 });
 
 // Salvar alteração de estoque
