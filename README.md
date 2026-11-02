@@ -18,6 +18,7 @@ Linguagem principal utilizada: Javascript (node.js)
 
 Ferramentas utilizadas: Node.js, interface em html e css, banco de dados MySQL
 
+Testes automatizados com Jest
 
 ### Banco de Dados e Ambiente de Desenvolvimento:
 
