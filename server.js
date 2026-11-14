@@ -12,6 +12,7 @@ const con = require('./src/config/database');
 // importar rotas (movidas para arquivo separado)
 const clientesRoutes = require('./src/routes/clientesRoutes');
 const produtosRoutes = require('./src/routes/produtosRoutes');
+const agendamentosRoutes = require('./src/routes/agendamentosRoutes');
 
 // criar o servidor http
 const app = express();
@@ -64,6 +65,9 @@ app.use('/clientes', clientesRoutes);
 
 // Rotas de produtos
 app.use('/produtos', produtosRoutes);
+
+// Rotas de agendamentos
+app.use('/agendamentos', agendamentosRoutes);
 
 // Rota não encontrada.
 app.use((req, res) => {
