@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realizar Manutenção</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Manutenção de Piscinas - Realizar Manutenção</h1>
+    </header>
+
+    <main>
+        <form id="formManutencao">
+
+            <h3>Dados do Agendamento</h3>
+
+            <div class="campo">
+                <label for="idAgendamento">Agendamento:</label>
+                <select id="idAgendamento" name="idAgendamento" required>
+                    <option value="">Carregando agendamentos...</option>
+                </select>
+            </div>
+
+            <section id="dadosPiscina" hidden>
+                <h3>Dados da Piscina</h3>
+                <p>Cliente: <strong id="nomeCliente"></strong></p>
+                <p>Data: <strong id="dataAgendamento"></strong></p>
+                <p>Horário: <strong id="horarioAgendamento"></strong></p>
+                <p>Profundidade: <strong id="profundidade"></strong> m</p>
+                <p>Lado 1: <strong id="lado1"></strong> m</p>
+                <p>Lado 2: <strong id="lado2"></strong> m</p>
+                <p>Volume: <strong id="volume"></strong> m³</p>
+            </section>
+
+            <h3>Medições da Água</h3>
+
+            <div class="campo">
+                <label for="ph">pH:</label>
+                <select id="ph" name="ph" required>
+                    <option value="">Selecione o pH</option>
+                    <option value="6.2">6,2</option>
+                    <option value="7.0">7,0</option>
+                    <option value="7.4">7,4</option>
+                    <option value="7.8">7,8</option>
+                    <option value="8.4">8,4</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="alcalinidade">Alcalinidade (ppm):</label>
+                <select id="alcalinidade" name="alcalinidade" required>
+                    <option value="">Selecione a alcalinidade</option>
+                    <option value="0">0</option>
+                    <option value="20">20</option>
+                    <option value="40">40</option>
+                    <option value="80">80</option>
+                    <option value="120">120</option>
+                    <option value="180">180</option>
+                    <option value="240">240</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="cloro">Cloro (ppm):</label>
+                <select id="cloro" name="cloro" required>
+                    <option value="">Selecione o cloro</option>
+                    <option value="0">0</option>
+                    <option value="0.5">0,5</option>
+                    <option value="1">1</option>
+                    <option value="3">3</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+
+            <div class="botoes">
+                <button type="button" class="voltar"
+                    onclick="window.location.href='index.html'">
+                    Voltar
+                </button>
+
+                <button type="button" id="btnLimpar">
+                    Limpar
+                </button>
+
+                <button type="submit" id="btnCalcular">
+                    Calcular dosagens
+                </button>
+            </div>
+
+        </form>
+
+        <div id="mensagem" role="status" aria-live="polite"></div>
+
+        <section id="resultado" hidden>
+            <h2>Resultado da Manutenção</h2>
+
+            <h3>Produtos e Dosagens</h3>
+
+            <table border="1" cellpadding="8" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Ordem</th>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Intervalo de filtração</th>
+                    </tr>
+                </thead>
+                <tbody id="listaProdutos">
+                </tbody>
+            </table>
+
+            <h3>Orientações</h3>
+            <ul id="listaOrientacoes"></ul>
+
+            <p>
+                <strong>Atenção:</strong>
+                As dosagens são estimativas. Siga as orientações do fabricante
+                e verifique as condições da água antes de liberar a piscina.
+            </p>
+
+            <button type="button" id="btnSalvar" disabled>
+                Confirmar e registrar manutenção
+            </button>
+        </section>
+
+        <section>
+            <h2>Agendamentos disponíveis para manutenção</h2>
+
+            <table border="1" cellpadding="8" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Horário</th>
+                        <th>Cliente</th>
+                        <th>Volume (m³)</th>
+                    </tr>
+                </thead>
+                <tbody id="listaAgendamentos">
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+    <script src="/js/manutencoes.js" defer></script>
+
+</body>
+
+</html>

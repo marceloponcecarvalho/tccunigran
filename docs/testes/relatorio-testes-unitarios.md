@@ -1,212 +1,182 @@
 # Relatório de Testes Automatizados
 
-## 1. Identificação
+## 1. Identificação do projeto
 
-- **Projeto:** Software para Auxílio na Manutenção de Piscinas Domésticas
-- **Etapa:** TCC II — Etapa 1: Codificação do software e Teste Unitário
-- **Framework de testes:** Jest 30.5.2
-- **Ferramenta para testes HTTP:** Supertest 7.3.1
-- **Ambiente:** Node.js 22.22.1
+**Projeto:** Software para Auxílio na Manutenção de Piscinas Domésticas  
+**Etapa:** TCC II — Etapa 1: Codificação do software e Teste Unitário
 
-## 2. Objetivo
+**Tecnologias utilizadas:**
 
-Este documento tem como objetivo registrar a execução e os resultados dos testes automatizados realizados durante o desenvolvimento do software, abrangendo testes unitários e testes de integração.
+- Node.js 22.22.1
+- Jest 30.5.2
+- Supertest 7.3.1
 
-Os testes serão implementados progressivamente, conforme os casos de uso forem concluídos, permitindo verificar o funcionamento dos componentes desenvolvidos, identificar possíveis falhas e acompanhar a evolução da cobertura do código.
+## 2. Estratégia de testes
 
-Este relatório será atualizado a cada nova implementação de testes, mantendo o histórico dos resultados obtidos ao longo do desenvolvimento.
+O projeto utiliza testes automatizados para verificar o funcionamento das regras de negócio, serviços, controladores, rotas e integração com o banco de dados.
 
-## 3. Ferramentas e ambiente de testes
+Os testes estão organizados em duas categorias:
 
-Os testes são desenvolvidos utilizando o framework Jest, executado no ambiente Node.js.
+- **Testes unitários:** verificam individualmente as funcionalidades e regras de negócio.
+- **Testes de integração:** verificam a comunicação entre as partes do sistema, incluindo as rotas HTTP e o banco de dados.
 
-O projeto utiliza dois comandos para executar as diferentes categorias de testes:
+Os testes de integração utilizam um banco de dados separado, denominado `manutencao_piscinas_test`, evitando alterações nos dados de produção.
 
-**Testes unitários com relatório de cobertura:**
+### Comandos utilizados
+
+Executar os testes unitários com análise de cobertura:
 
 ```bash
 npm run test:unit -- --coverage
 ```
 
-**Testes de integração:**
+Executar os testes de integração:
 
 ```bash
 npm run test:integration
 ```
 
-Os testes de integração utilizam o Supertest para realizar requisições HTTP à aplicação e verificar o comportamento conjunto das rotas, controllers, repositories e banco de dados.
+## 3. Histórico de execuções
 
-O ambiente de integração utiliza um banco de dados separado (`manutencao_piscinas_test`), evitando alterações nos dados do banco principal da aplicação (`manutencao_piscinas`).
+| Data | Descrição | Testes unitários | Testes de integração | Total |
 
-A ferramenta de cobertura permite verificar:
+| 02/11/2026 | Primeira execução registrada | 79 | 7 | 86 |
+| 02/11/2026 | Após refatoração | — | 7 | 7 |
+| 02/11/2026 | Execução após ampliação dos testes | — | — | 126 |
+| 13/11/2026 | Execução completa mais recente | 239 | 36 | 275 |
 
-- **Statements:** percentual de instruções executadas pelos testes.
-- **Branches:** percentual de ramificações condicionais executadas.
-- **Functions:** percentual de funções executadas.
-- **Lines:** percentual de linhas de código executadas.
+**Resultado da última execução registrada:**
 
-## 4. Histórico de execuções
+- 17 suítes de testes unitários aprovadas.
+- 239 testes unitários aprovados.
+- 4 suítes de testes de integração aprovadas.
+- 36 testes de integração aprovados.
+- 275 testes aprovados no total.
+- Nenhuma falha registrada.
 
-Esta seção registra os resultados das execuções realizadas durante o desenvolvimento.
+## 4. Cobertura dos testes unitários
 
-| Data | Funcionalidades testadas | Testes aprovados | Falhas |
-|---|---|---:|---:|
-| 02/11/2026 | Gerenciamento de clientes e produtos, rotas e servidor Express — testes unitários | 79 | 0 |
-| 02/11/2026 | Integração do gerenciamento de clientes com o banco de dados | 7 | 0 |
-| 02/11/2026 | Execução conjunta dos testes unitários e de integração | 86 | 0 |
-| 02/11/2026 | Execução dos testes de integração após a refatoração de clientes e produtos | 7 | 0 |
-| 02/11/2026 | Execução conjunta após as refatorações dos serviços de clientes e produtos | 126 | 0 |
+A cobertura foi atualizada em 13/11/2026, considerando os 239 testes unitários executados.
 
-Os resultados serão atualizados conforme novos casos de uso forem implementados e testados.
+### 4.1. Cobertura geral
 
-## 5. Cobertura de código
+| Métrica | Cobertura |
 
-A cobertura de código permite acompanhar a abrangência dos testes unitários sobre os arquivos instrumentados pelo Jest.
+| Statements (instruções) | 98,88% |
+| Branches (ramificações) | 97,63% |
+| Functions (funções) | 96,92% |
+| Lines (linhas) | 98,88% |
 
-Os resultados apresentados nesta seção correspondem aos testes unitários. Os testes de integração são registrados separadamente e não estão incluídos nos percentuais apresentados.
+### 4.2. Cobertura por módulo
 
-### 5.1 Resultado dos testes unitários
+| Módulo | Instruções | Ramificações | Funções | Linhas |
 
-**Data:** 02/11/2026
+| server.js | 91,30% | 75,00% | 50,00% | 91,30% |
+| Controllers | 100% | 100% | 100% | 100% |
+| Repositories | 100% | 100% | 100% | 100% |
+| Routes | 100% | 100% | 100% | 100% |
+| Services | 98,57% | 96,92% | 96,55% | 98,55% |
 
-```text
------------------------------|---------|----------|---------|---------|-------------------
-File                         | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
------------------------------|---------|----------|---------|---------|-------------------
-All files                    |   98.91 |    98.76 |   96.66 |    98.9 |                   
- tccunigran                  |   89.47 |       75 |      50 |   89.47 |                   
-  server.js                  |   89.47 |       75 |      50 |   89.47 | 75-76             
- tccunigran/src/controllers  |     100 |      100 |     100 |     100 |                   
-  clientesController.js      |     100 |      100 |     100 |     100 |                   
-  produtosController.js      |     100 |      100 |     100 |     100 |                   
- tccunigran/src/repositories |     100 |      100 |     100 |     100 |                   
-  clientesRepository.js      |     100 |      100 |     100 |     100 |                   
-  produtosRepository.js      |     100 |      100 |     100 |     100 |                   
- tccunigran/src/routes       |     100 |      100 |     100 |     100 |                   
-  clientesRoutes.js          |     100 |      100 |     100 |     100 |                   
-  produtosRoutes.js          |     100 |      100 |     100 |     100 |                   
- tccunigran/src/services     |     100 |      100 |     100 |     100 |                   
-  clientesService.js         |     100 |      100 |     100 |     100 |                   
-  produtosService.js         |     100 |      100 |     100 |     100 |                   
------------------------------|---------|----------|---------|---------|-------------------
+### 4.3. Arquivos com cobertura inferior a 100%
 
-Test Suites: 10 passed, 10 total
-Tests:       119 passed, 119 total
-Snapshots:   0 total
-Time:        1.946 s, estimated 2 s
-Ran all test suites matching tests/unit.
-```
+Os pontos ainda não cobertos na execução de 13/11/2026 foram:
 
-As linhas não cobertas no arquivo `server.js` referem-se à inicialização do servidor (`app.listen()`), não executada durante os testes automatizados, pois o servidor é importado diretamente pelo Jest.
+| Arquivo | Linhas não cobertas |
 
-## 6. Casos de uso testados
+| server.js | 83–84 |
+| agendamentosService.js | 113 |
+| manutencaoService.js | 143, 274 e 305 |
 
-Esta seção será ampliada conforme os casos de uso forem concluídos.
+Os demais arquivos apresentados no relatório de cobertura atingiram 100% nas métricas de instruções, ramificações, funções e linhas.
 
-### 6.1 Gerenciamento de clientes — testes unitários
+## 5. Testes implementados por funcionalidade
 
-Foram implementados testes unitários para verificar:
+### 5.1. Gerenciar clientes
+
+Foram implementados testes para verificar:
 
 - Cadastro de clientes.
-- Atualização de dados de clientes.
+- Consulta de clientes.
 - Validação de CPF e CNPJ.
-- Validação dos campos obrigatórios.
-- Tratamento de documentos duplicados.
-- Consulta de clientes pelo CPF.
-- Listagem de clientes.
-- Tratamento de erros durante as operações.
-- Normalização de CPF e CNPJ na camada de serviço.
-- Validação dos dados antes de encaminhar a operação ao repository.
-- Normalização do CPF nas consultas.
-- Encaminhamento das operações do controller para o service.
-- Tratamento de erros retornados pela camada de serviço.
+- Tratamento de dados inválidos.
+- Persistência e recuperação dos dados.
+- Funcionamento das rotas relacionadas aos clientes.
 
-**Arquivos envolvidos:**
+### 5.2. Gerenciar produtos
 
-- `clientesController.js`
-- `clientesService.js`
-- `clientesRepository.js`
+Foram implementados testes para verificar:
 
-### 6.2 Gerenciamento de produtos — testes unitários
+- Cadastro e consulta de produtos.
+- Validação dos dados.
+- Regras de negócio relacionadas aos produtos.
+- Operações do repositório e das rotas.
 
-Foram implementados testes unitários para verificar:
+### 5.3. Gerenciar agendamentos
 
-- Consulta de produtos.
-- Busca de produtos por tipo.
+Foram implementados testes para verificar:
+
+- Consulta de horários disponíveis.
+- Cadastro de agendamentos.
+- Validação dos dados informados.
+- Regras de disponibilidade.
+- Integração com o banco de dados.
+
+### 5.4. Realizar manutenção
+
+Foram implementados testes unitários e de integração para verificar:
+
+**Cálculos e regras de negócio:**
+
+- Cálculo do volume da piscina.
+- Validação das medições de pH, alcalinidade e cloro.
+- Cálculo das dosagens dos produtos.
+- Priorização da correção da alcalinidade quando estiver fora da faixa ideal.
+- Impedimento de dosagens simultâneas e duplicadas para correção de pH quando a alcalinidade exigir correção.
+- Cálculo independente da dosagem de cloro.
+- Ordem de aplicação dos produtos.
+- Orientações sobre os períodos de filtração.
+- Arredondamento das quantidades calculadas.
+- Separação entre cálculo da manutenção e gravação no banco de dados.
+
+**Integração e persistência:**
+
+- Consulta dos agendamentos disponíveis.
+- Recuperação dos dados do cliente e da piscina.
+- Cálculo da manutenção pela API.
+- Registro da manutenção vinculada ao agendamento.
+- Persistência das medições e dos produtos utilizados.
 - Atualização do estoque.
-- Validação das quantidades informadas.
-- Conversão das apresentações comerciais para unidades de estoque.
-- Cálculo das quantidades adicionadas.
-- Tratamento de erros durante as operações.
+- Tratamento de estoque insuficiente.
+- Prevenção de registros duplicados.
+- Comportamento transacional durante a gravação.
 
-**Arquivos envolvidos:**
+## 6. Testes funcionais no navegador
 
-- `produtosController.js`
-- `produtosService.js`
-- `produtosRepository.js`
+Além dos testes automatizados, foi realizada validação funcional do caso de uso Realizar Manutenção diretamente pelo navegador.
 
-### 6.3 Rotas de clientes e produtos
+Foram verificadas as seguintes operações:
 
-Foram implementados testes para verificar o encaminhamento das requisições HTTP aos respectivos métodos dos controllers.
+- Carregamento dos agendamentos disponíveis.
+- Seleção do agendamento e apresentação dos dados do cliente e da piscina.
+- Seleção das medições da água.
+- Cálculo da manutenção.
+- Apresentação dos produtos, quantidades e orientações.
+- Registro da manutenção.
+- Identificação de situações em que o estoque disponível é insuficiente.
+- Atualização da relação de agendamentos após o registro.
 
-**Rotas de clientes:**
+O funcionamento foi confirmado durante a utilização do sistema, incluindo o registro de uma manutenção e a apresentação dos avisos de insuficiência de estoque.
 
-- POST `/clientes/salvar`
-- GET `/clientes/buscar`
-- GET `/clientes/listar`
+## 7. Resultado geral
 
-**Rotas de produtos:**
+Na última execução registrada, em 13/11/2026, foram aprovados:
 
-- GET `/produtos/listar`
-- GET `/produtos/buscar`
-- PUT `/produtos/atualizar`
+- **239 testes unitários**, distribuídos em 17 suítes.
+- **36 testes de integração**, distribuídos em 4 suítes.
+- **275 testes no total**, sem falhas.
 
-**Ferramenta utilizada:** Supertest 7.3.1.
+A cobertura dos testes unitários atingiu 98,88% de instruções e linhas, 97,63% de ramificações e 96,92% de funções.
 
-### 6.4 Servidor Express (`server.js`)
+Os resultados demonstram uma cobertura elevada das funcionalidades implementadas e uma validação automatizada abrangente das regras de negócio, dos componentes do sistema e da integração com o banco de dados.
 
-Foram implementados testes para verificar a configuração e o funcionamento geral do servidor Express.
-
-**Cenários testados:**
-
-- Retorno HTTP 404 para rotas inexistentes.
-- Encaminhamento das requisições para as rotas de clientes.
-- Encaminhamento das requisições para as rotas de produtos.
-- Interpretação de requisições no formato JSON.
-- Interpretação de formulários no formato URL-encoded.
-- Disponibilização de arquivos estáticos da pasta `public`.
-
-**Ferramenta utilizada:** Supertest 7.3.1.
-
-### 6.5 Integração do gerenciamento de clientes
-
-Foram implementados testes de integração para verificar o funcionamento conjunto da aplicação e do banco de dados.
-
-Os testes utilizam o banco `manutencao_piscinas_test`, mantendo os dados do banco principal separados do ambiente de testes.
-
-**Cenários testados:**
-
-- Confirmação de utilização do banco de dados de testes.
-- Busca de cliente pelo CPF e retorno dos dados da piscina.
-- Listagem de clientes e cálculo do volume da piscina.
-- Atualização dos dados do cliente e da piscina.
-- Cadastro de novo cliente e respectiva piscina.
-- Rejeição de cadastro com CPF inválido.
-- Rejeição de cadastro com CPF duplicado.
-
-**Arquivos envolvidos:**
-
-- `clientes.integration.test.js`
-- `setupIntegration.js`
-- `jest.integration.config.js`
-- Rotas, controllers e repositories de clientes.
-
-**Ferramentas utilizadas:** Jest 30.5.2 e Supertest 7.3.1.
-
-## 7. Considerações finais
-
-Os testes automatizados serão realizados continuamente durante o desenvolvimento do software, acompanhando a conclusão de cada caso de uso.
-
-Os resultados registrados neste documento representam o estágio atual dos testes e serão atualizados conforme novas funcionalidades forem implementadas.
-
-Ao final da etapa de desenvolvimento e testes, será possível consolidar os resultados obtidos, avaliar a cobertura geral do código e utilizar essas informações como evidência da qualidade e do funcionamento dos componentes desenvolvidos.
+O caso de uso Realizar Manutenção também foi validado funcionalmente no navegador.

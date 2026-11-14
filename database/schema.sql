@@ -74,7 +74,8 @@ CREATE TABLE `Manutencao` (
   `ph` float DEFAULT NULL,
   `alcalinidade` float DEFAULT NULL,
   `cloro` float DEFAULT NULL,
-  `idCliente` int(11) DEFAULT NULL
+  `idCliente` int(11) DEFAULT NULL,
+  `idAgendamento` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -122,6 +123,7 @@ ALTER TABLE `ItemManutencao`
 
 ALTER TABLE `Manutencao`
   ADD PRIMARY KEY (`idManutencao`),
+  ADD UNIQUE KEY `unique_agendamento` (`idAgendamento`),
   ADD KEY `idCliente` (`idCliente`);
 
 ALTER TABLE `Piscina`
@@ -173,6 +175,9 @@ ALTER TABLE `ItemManutencao`
 ALTER TABLE `Manutencao`
   ADD CONSTRAINT `Manutencao_ibfk_1`
     FOREIGN KEY (`idCliente`) REFERENCES `Cliente` (`idCliente`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_manutencao_agendamento`
+    FOREIGN KEY (`idAgendamento`) REFERENCES `Agendamento` (`idAgendamento`)
     ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `Piscina`
@@ -243,7 +248,8 @@ CREATE TABLE `Manutencao` (
   `ph` float DEFAULT NULL,
   `alcalinidade` float DEFAULT NULL,
   `cloro` float DEFAULT NULL,
-  `idCliente` int(11) DEFAULT NULL
+  `idCliente` int(11) DEFAULT NULL,
+  `idAgendamento` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -291,6 +297,7 @@ ALTER TABLE `ItemManutencao`
 
 ALTER TABLE `Manutencao`
   ADD PRIMARY KEY (`idManutencao`),
+  ADD UNIQUE KEY `unique_agendamento` (`idAgendamento`),
   ADD KEY `idCliente` (`idCliente`);
 
 ALTER TABLE `Piscina`
@@ -342,6 +349,9 @@ ALTER TABLE `ItemManutencao`
 ALTER TABLE `Manutencao`
   ADD CONSTRAINT `Manutencao_ibfk_1`
     FOREIGN KEY (`idCliente`) REFERENCES `Cliente` (`idCliente`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_manutencao_agendamento`
+    FOREIGN KEY (`idAgendamento`) REFERENCES `Agendamento` (`idAgendamento`)
     ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `Piscina`

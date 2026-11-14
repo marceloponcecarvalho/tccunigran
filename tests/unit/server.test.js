@@ -45,8 +45,20 @@ jest.mock('../../src/controllers/produtosController', () => ({
     }))
 }));
 
+// Simular controller de manutenção
+jest.mock('../../src/controllers/manutencaoController', () => ({
+    listarAgendamentosDisponiveis: jest.fn((req, res) => res.status(200).json([])),
+    calcular: jest.fn((req, res) => res.status(200).json({
+        body: req.body
+    })),
+    salvar: jest.fn((req, res) => res.status(201).json({
+        body: req.body
+    }))
+}));
+
 const clientesController = require('../../src/controllers/clientesController');
 const produtosController = require('../../src/controllers/produtosController');
+const manutencaoController = require('../../src/controllers/manutencaoController');
 
 const app = require('../../server');
 
@@ -126,4 +138,53 @@ test('deve disponibilizar arquivos da pasta public', async () => {
 
     expect(resposta.status).toBe(200);
     expect(resposta.text).toContain('<html');
+});
+
+// Testar listagem de agendamentos disponíveis para manutenção
+test('deve encaminhar requisição para listar agendamentos disponíveis', async () => {
+    const resposta = await request(app)
+        .get('/manutencoes/agendamentos');
+
+    expect(resposta.status).toBe(200);
+    expect(manutencaoController.listarAgendamentosDisponiveis).toHaveBeenCalledTimes(1);
+});
+
+// Testar cálculo de manutenção
+test('deve encaminhar medições para calcular a manutenção', async () => {
+    const dados = {
+        idAgendamento: 1,
+        medicoes: {
+            ph: 7.0,
+            alcalinidade: 80,
+            cloro: 1
+        }
+    };
+
+    const resposta = await request(app)
+        .post('/manutencoes/calcular')
+        .send(dados);
+
+    expect(resposta.status).toBe(200);
+    expect(resposta.body.body).toEqual(dados);
+    expect(manutencaoController.calcular).toHaveBeenCalledTimes(1);
+});
+
+// Testar confirmação de manutenção
+test('deve encaminhar dados para registrar a manutenção', async () => {
+    const dados = {
+        idAgendamento: 1,
+        medicoes: {
+            ph: 7.0,
+            alcalinidade: 80,
+            cloro: 1
+        }
+    };
+
+    const resposta = await request(app)
+        .post('/manutencoes/salvar')
+        .send(dados);
+
+    expect(resposta.status).toBe(201);
+    expect(resposta.body.body).toEqual(dados);
+    expect(manutencaoController.salvar).toHaveBeenCalledTimes(1);
 });

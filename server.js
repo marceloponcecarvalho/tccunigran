@@ -13,6 +13,7 @@ const con = require('./src/config/database');
 const clientesRoutes = require('./src/routes/clientesRoutes');
 const produtosRoutes = require('./src/routes/produtosRoutes');
 const agendamentosRoutes = require('./src/routes/agendamentosRoutes');
+const manutencaoRoutes = require('./src/routes/manutencaoRoutes');
 
 // criar o servidor http
 const app = express();
@@ -68,6 +69,9 @@ app.use('/produtos', produtosRoutes);
 
 // Rotas de agendamentos
 app.use('/agendamentos', agendamentosRoutes);
+
+// Rotas de manutenção
+app.use('/manutencoes', manutencaoRoutes);
 
 // Rota não encontrada.
 app.use((req, res) => {
