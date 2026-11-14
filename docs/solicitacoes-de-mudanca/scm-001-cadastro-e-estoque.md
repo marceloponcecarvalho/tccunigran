@@ -24,7 +24,7 @@ Também foi identificada a necessidade de controlar o estoque considerando a uni
 Ajustar o cadastro e o controle de estoque para contemplar quatro tipos de produtos:
 
 | Produto | Apresentações comerciais | Estado físico | Unidade de controle e utilização |
-|---|---|---|---|
+
 | Cloro | Baldes de 1 kg ou 10 kg | Pó (granulado) | Gramas (g) |
 | Elevador de alcalinidade | Sacos de 1 kg ou 2 kg | Pó | Gramas (g) |
 | Elevador de pH | Garrafas de 1 L ou 5 L | Líquido | Mililitros (ml) |
@@ -41,6 +41,7 @@ A alteração aproxima o cadastro do funcionamento real dos produtos utilizados 
 ### 5. Itens impactados
 
 **Implementados:**
+
 - Cadastro dos quatro tipos de produtos químicos.
 - Dados iniciais (`database/seed.sql`).
 - Tela de gerenciamento de produtos.
@@ -50,6 +51,7 @@ A alteração aproxima o cadastro do funcionamento real dos produtos utilizados 
 - Estrutura da tabela `Produto` preservada, sem necessidade de adicionar coluna para unidade de medida.
 
 **Pendentes:**
+
 - Registro dos produtos utilizados nas manutenções.
 - Cálculo e baixa do consumo de produtos no estoque.
 
