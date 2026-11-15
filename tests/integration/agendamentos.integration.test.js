@@ -1,6 +1,7 @@
 const request = require('supertest');
 
 const app = require('../../server');
+const agente = request.agent(app);
 const con = require('../../src/config/database');
 
 const db = con.promise();
@@ -16,6 +17,15 @@ let bancoConfirmado = false;
 
 // Preparar os dados utilizados nos testes
 beforeAll(async () => {
+    const login = await agente
+        .post('/auth/login')
+        .send({
+            usuario: 'usuario_teste',
+            senha: 'SenhaTeste123'
+        });
+
+    expect(login.status).toBe(200);
+
     const [bancos] = await db.query('SELECT DATABASE() AS nome');
 
     if (bancos[0].nome !== 'manutencao_piscinas_test') {
@@ -87,7 +97,7 @@ test('deve utilizar o banco de testes', async () => {
 
 // Listar agendamentos
 test('deve listar os agendamentos cadastrados', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/agendamentos/');
 
     expect(resposta.status).toBe(200);
@@ -105,7 +115,7 @@ test('deve listar os agendamentos cadastrados', async () => {
 
 // Buscar agendamento pelo ID
 test('deve buscar um agendamento pelo ID', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get(`/agendamentos/${idAgendamentoTeste}`);
 
     expect(resposta.status).toBe(200);
@@ -119,7 +129,7 @@ test('deve buscar um agendamento pelo ID', async () => {
 
 // Rejeitar ID inválido na busca
 test('não deve buscar agendamento com ID inválido', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/agendamentos/abc');
 
     expect(resposta.status).toBe(400);
@@ -128,7 +138,7 @@ test('não deve buscar agendamento com ID inválido', async () => {
 
 // Rejeitar agendamento inexistente na busca
 test('deve retornar erro ao buscar agendamento inexistente', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/agendamentos/2147483647');
 
     expect(resposta.status).toBe(404);
@@ -137,7 +147,7 @@ test('deve retornar erro ao buscar agendamento inexistente', async () => {
 
 // Cadastrar agendamento
 test('deve cadastrar um novo agendamento', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/agendamentos/')
         .send({
             data: dataNova,
@@ -168,7 +178,7 @@ test('deve cadastrar um novo agendamento', async () => {
 
 // Atualizar agendamento
 test('deve atualizar um agendamento existente', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/agendamentos/')
         .send({
             idAgendamento: idAgendamentoCriado,
@@ -196,7 +206,7 @@ test('deve atualizar um agendamento existente', async () => {
 
 // Rejeitar data inválida
 test('não deve cadastrar agendamento com data inválida', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/agendamentos/')
         .send({
             data: '2099-02-30',
@@ -210,7 +220,7 @@ test('não deve cadastrar agendamento com data inválida', async () => {
 
 // Rejeitar horário inválido
 test('não deve cadastrar agendamento com horário inválido', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/agendamentos/')
         .send({
             data: dataNova,
@@ -226,7 +236,7 @@ test('não deve cadastrar agendamento com horário inválido', async () => {
 
 // Rejeitar horário ocupado
 test('não deve cadastrar agendamento em horário já ocupado', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/agendamentos/')
         .send({
             data: dataTeste,
@@ -243,7 +253,7 @@ test('não deve cadastrar agendamento em horário já ocupado', async () => {
 
 // Rejeitar cliente inexistente
 test('não deve cadastrar agendamento para cliente inexistente', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/agendamentos/')
         .send({
             data: dataNova,
@@ -257,7 +267,7 @@ test('não deve cadastrar agendamento para cliente inexistente', async () => {
 
 // Excluir agendamento
 test('deve excluir um agendamento existente', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .delete(`/agendamentos/${idAgendamentoCriado}`);
 
     expect(resposta.status).toBe(200);
@@ -275,7 +285,7 @@ test('deve excluir um agendamento existente', async () => {
 
 // Rejeitar exclusão de agendamento inexistente
 test('não deve excluir agendamento inexistente', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .delete('/agendamentos/2147483647');
 
     expect(resposta.status).toBe(404);

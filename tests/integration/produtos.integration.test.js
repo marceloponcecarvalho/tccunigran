@@ -1,6 +1,7 @@
 const request = require('supertest');
 
 const app = require('../../server');
+const agente = request.agent(app);
 const con = require('../../src/config/database');
 
 const db = con.promise();
@@ -12,6 +13,15 @@ let bancoConfirmado = false;
 
 // Preparar os dados utilizados nos testes
 beforeAll(async () => {
+    const login = await agente
+        .post('/auth/login')
+        .send({
+            usuario: 'usuario_teste',
+            senha: 'SenhaTeste123'
+        });
+
+    expect(login.status).toBe(200);
+
     const [bancos] = await db.query('SELECT DATABASE() AS nome');
 
     if (bancos[0].nome !== 'manutencao_piscinas_test') {
@@ -56,7 +66,7 @@ test('deve utilizar o banco de testes', async () => {
 
 // Listar produtos
 test('deve listar produtos cadastrados', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/produtos/listar');
 
     expect(resposta.status).toBe(200);
@@ -73,7 +83,7 @@ test('deve listar produtos cadastrados', async () => {
 
 // Buscar produto pelo tipo
 test('deve buscar produto pelo tipo', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/produtos/buscar')
         .query({ tipo: tipoTeste });
 
@@ -85,7 +95,7 @@ test('deve buscar produto pelo tipo', async () => {
 
 // Buscar produto com espaços no tipo informado
 test('deve remover espaços extras ao buscar produto', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/produtos/buscar')
         .query({ tipo: `  ${tipoTeste}  ` });
 
@@ -95,7 +105,7 @@ test('deve remover espaços extras ao buscar produto', async () => {
 
 // Rejeitar busca sem informar o tipo
 test('não deve buscar produto sem informar o tipo', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/produtos/buscar');
 
     expect(resposta.status).toBe(400);
@@ -104,7 +114,7 @@ test('não deve buscar produto sem informar o tipo', async () => {
 
 // Rejeitar produto inexistente
 test('deve retornar erro ao buscar produto inexistente', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/produtos/buscar')
         .query({ tipo: 'Produto Inexistente' });
 
@@ -114,7 +124,7 @@ test('deve retornar erro ao buscar produto inexistente', async () => {
 
 // Atualizar quantidade em estoque
 test('deve acrescentar quantidade ao estoque do produto', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .put('/produtos/atualizar')
         .send({
             idProduto: idProdutoTeste,
@@ -135,7 +145,7 @@ test('deve acrescentar quantidade ao estoque do produto', async () => {
 
 // Rejeitar quantidade inválida
 test('não deve atualizar estoque com quantidade inválida', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .put('/produtos/atualizar')
         .send({
             idProduto: idProdutoTeste,
@@ -157,7 +167,7 @@ test('não deve atualizar estoque com quantidade inválida', async () => {
 
 // Rejeitar atualização de produto inexistente
 test('não deve atualizar estoque de produto inexistente', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .put('/produtos/atualizar')
         .send({
             idProduto: 2147483647,

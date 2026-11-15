@@ -2,6 +2,7 @@
 const request = require('supertest');
 
 const app = require('../../server');
+const agente = request.agent(app);
 const con = require('../../src/config/database');
 
 const db = con.promise();
@@ -14,6 +15,15 @@ let bancoConfirmado = false;
 
 // Preparar os dados utilizados nos testes
 beforeAll(async () => {
+    const login = await agente
+        .post('/auth/login')
+        .send({
+            usuario: 'usuario_teste',
+            senha: 'SenhaTeste123'
+        });
+
+    expect(login.status).toBe(200);
+
     const [bancos] = await db.query('SELECT DATABASE() AS nome');
 
     if (bancos[0].nome !== 'manutencao_piscinas_test') {
@@ -70,7 +80,7 @@ test('deve utilizar o banco de testes', async () => {
 
 // Consultar cliente pelo CPF
 test('deve buscar cliente pelo CPF e retornar os dados da piscina', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/clientes/buscar')
         .query({ cpf: '123.456.789-01' });
 
@@ -84,7 +94,7 @@ test('deve buscar cliente pelo CPF e retornar os dados da piscina', async () => 
 
 // Listar clientes
 test('deve listar clientes e calcular o volume da piscina', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/clientes/listar');
 
     expect(resposta.status).toBe(200);
@@ -111,7 +121,7 @@ test('deve atualizar os dados do cliente e da piscina', async () => {
         lado2: 5
     };
 
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/clientes/salvar')
         .send(dados);
 
@@ -149,7 +159,7 @@ test('deve cadastrar cliente e piscina no banco de dados', async () => {
         lado2: 3
     };
 
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/clientes/salvar')
         .send(dados);
 
@@ -175,7 +185,7 @@ test('deve cadastrar cliente e piscina no banco de dados', async () => {
 
 // Rejeitar CPF inválido
 test('não deve cadastrar cliente com CPF inválido', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/clientes/salvar')
         .send({
             nome: 'Cliente Inválido',
@@ -199,7 +209,7 @@ test('não deve cadastrar cliente com CPF inválido', async () => {
 
 // Rejeitar CPF duplicado
 test('não deve cadastrar dois clientes com o mesmo CPF', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/clientes/salvar')
         .send({
             nome: 'Cliente Duplicado',

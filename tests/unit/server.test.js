@@ -1,6 +1,8 @@
 const request = require('supertest');
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
+const bcrypt = require('bcrypt');
 
 // Simular dotenv
 jest.mock('dotenv', () => ({
@@ -60,7 +62,54 @@ const clientesController = require('../../src/controllers/clientesController');
 const produtosController = require('../../src/controllers/produtosController');
 const manutencaoController = require('../../src/controllers/manutencaoController');
 
+// Criar uma conta isolada para os testes de autenticação.
+process.env.NODE_ENV = 'test';
+process.env.SESSION_SECRET = 'segredo-exclusivo-dos-testes';
+
+const diretorioTeste = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'tccunigran-unit-')
+);
+
+const diretorioSessoes = path.join(diretorioTeste, 'sessions');
+
+fs.mkdirSync(diretorioSessoes, {
+    recursive: true,
+    mode: 0o700
+});
+
+process.env.AUTH_USER_FILE = path.join(diretorioTeste, 'usuario.json');
+process.env.SESSION_FILE_STORE_PATH = diretorioSessoes;
+
+fs.writeFileSync(
+    process.env.AUTH_USER_FILE,
+    JSON.stringify({
+        usuario: 'usuario_teste',
+        senhaHash: bcrypt.hashSync('SenhaTeste123', 4),
+        versao: 1
+    }),
+    { mode: 0o600 }
+);
+
 const app = require('../../server');
+const agente = request.agent(app);
+
+beforeAll(async () => {
+    const resposta = await agente
+        .post('/auth/login')
+        .send({
+            usuario: 'usuario_teste',
+            senha: 'SenhaTeste123'
+        });
+
+    expect(resposta.status).toBe(200);
+});
+
+afterAll(() => {
+    fs.rmSync(diretorioTeste, {
+        recursive: true,
+        force: true
+    });
+});
 
 // Limpar chamadas anteriores
 beforeEach(() => {
@@ -69,7 +118,7 @@ beforeEach(() => {
 
 // Testar rota inexistente
 test('deve retornar HTTP 404 para uma rota inexistente', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/rota-inexistente');
 
     expect(resposta.status).toBe(404);
@@ -78,7 +127,7 @@ test('deve retornar HTTP 404 para uma rota inexistente', async () => {
 
 // Testar rota de listagem de clientes
 test('deve encaminhar requisição para a rota de clientes', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/clientes/listar');
 
     expect(resposta.status).toBe(200);
@@ -87,7 +136,7 @@ test('deve encaminhar requisição para a rota de clientes', async () => {
 
 // Testar rota de listagem de produtos
 test('deve encaminhar requisição para a rota de produtos', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/produtos/listar');
 
     expect(resposta.status).toBe(200);
@@ -101,7 +150,7 @@ test('deve interpretar requisições no formato JSON', async () => {
         quantidade: 1000
     };
 
-    const resposta = await request(app)
+    const resposta = await agente
         .put('/produtos/atualizar')
         .send(dados);
 
@@ -117,7 +166,7 @@ test('deve interpretar requisições no formato URL-encoded', async () => {
         cpf: '12345678901'
     };
 
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/clientes/salvar')
         .type('form')
         .send(dados);
@@ -133,7 +182,7 @@ test('deve disponibilizar arquivos da pasta public', async () => {
 
     expect(fs.existsSync(arquivo)).toBe(true);
 
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/index.html');
 
     expect(resposta.status).toBe(200);
@@ -142,7 +191,7 @@ test('deve disponibilizar arquivos da pasta public', async () => {
 
 // Testar listagem de agendamentos disponíveis para manutenção
 test('deve encaminhar requisição para listar agendamentos disponíveis', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/manutencoes/agendamentos');
 
     expect(resposta.status).toBe(200);
@@ -160,7 +209,7 @@ test('deve encaminhar medições para calcular a manutenção', async () => {
         }
     };
 
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/manutencoes/calcular')
         .send(dados);
 
@@ -180,11 +229,35 @@ test('deve encaminhar dados para registrar a manutenção', async () => {
         }
     };
 
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/manutencoes/salvar')
         .send(dados);
 
     expect(resposta.status).toBe(201);
     expect(resposta.body.body).toEqual(dados);
     expect(manutencaoController.salvar).toHaveBeenCalledTimes(1);
+});
+
+
+// Verificar proteção das APIs e dos arquivos internos.
+test('deve rejeitar acesso não autenticado às APIs', async () => {
+    const resposta = await request(app)
+        .get('/clientes/listar');
+
+    expect(resposta.status).toBe(401);
+});
+
+test('não deve disponibilizar scripts internos sem autenticação', async () => {
+    const resposta = await request(app)
+        .get('/js/clientes.js');
+
+    expect(resposta.status).toBe(302);
+    expect(resposta.headers.location).toBe('/login.html');
+});
+
+test('deve disponibilizar o script público de login sem autenticação', async () => {
+    const resposta = await request(app)
+        .get('/js/login.js');
+
+    expect(resposta.status).toBe(200);
 });

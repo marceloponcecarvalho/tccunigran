@@ -3,5 +3,5 @@ module.exports = {
     rootDir: '..',
     testEnvironment: 'node',
     testMatch: ['<rootDir>/tests/integration/**/*.test.js'],
-    setupFiles: ['<rootDir>/tests/setupIntegration.js']
+    setupFilesAfterEnv: ['<rootDir>/tests/setupIntegration.js']
 };

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro inicial - Manutenção de Piscinas</title>
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/js/cadastro-inicial.js" defer></script>
+</head>
+<body>
+    <main>
+        <h1>Configuração inicial</h1>
+        <p>Crie a conta administrativa para começar a utilizar o sistema.</p>
+
+        <form id="formCadastro">
+            <label for="usuario">Nome de usuário</label>
+            <input
+                type="text"
+                id="usuario"
+                name="usuario"
+                minlength="3"
+                maxlength="50"
+                autocomplete="username"
+                required
+            >
+
+            <label for="senha">Senha (mínimo de 4 caracteres)</label>
+            <input
+                type="password"
+                id="senha"
+                name="senha"
+                minlength="4"
+                autocomplete="new-password"
+                required
+            >
+
+            <label for="confirmarSenha">Confirmar senha</label>
+            <input
+                type="password"
+                id="confirmarSenha"
+                name="confirmarSenha"
+                minlength="4"
+                autocomplete="new-password"
+                required
+            >
+
+            <button type="submit">Criar conta administrativa</button>
+        </form>
+
+        <p id="mensagem" class="mensagem" role="status"></p>
+    </main>
+</body>
+</html>

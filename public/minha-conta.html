@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Conta - Manutenção de Piscinas</title>
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/js/minha-conta.js" defer></script>
+</head>
+<body>
+    <main>
+        <h1>Minha Conta</h1>
+        <p>Altere seu nome de usuário, sua senha ou ambos.</p>
+
+        <form id="formConta">
+            <label for="novoUsuario">Novo nome de usuário</label>
+            <input
+                type="text"
+                id="novoUsuario"
+                name="novoUsuario"
+                minlength="3"
+                maxlength="50"
+                autocomplete="username"
+                placeholder="Deixe vazio para manter o atual"
+            >
+
+            <label for="novaSenha">Nova senha</label>
+            <input
+                type="password"
+                id="novaSenha"
+                name="novaSenha"
+                minlength="4"
+                autocomplete="new-password"
+                placeholder="Deixe vazio para manter a atual"
+            >
+
+            <label for="confirmarNovaSenha">Confirmar nova senha</label>
+            <input
+                type="password"
+                id="confirmarNovaSenha"
+                name="confirmarNovaSenha"
+                minlength="4"
+                autocomplete="new-password"
+                placeholder="Repita a nova senha"
+            >
+
+            <label for="senhaAtual">Senha atual (obrigatória)</label>
+            <input
+                type="password"
+                id="senhaAtual"
+                name="senhaAtual"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit">Salvar alterações</button>
+        </form>
+
+        <p id="mensagem" class="mensagem" role="status"></p>
+
+        <div class="acoes">
+            <a class="link" href="/index.html">Voltar ao menu</a>
+            <button type="button" id="botaoSair">Sair</button>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,6 +1,7 @@
 const request = require('supertest');
 
 const app = require('../../server');
+const agente = request.agent(app);
 const con = require('../../src/config/database');
 const pool = require('../../src/config/databasePool');
 
@@ -42,6 +43,15 @@ function obterDataLocal(data = new Date()) {
 
 // Preparar os dados utilizados nos testes
 beforeAll(async () => {
+    const login = await agente
+        .post('/auth/login')
+        .send({
+            usuario: 'usuario_teste',
+            senha: 'SenhaTeste123'
+        });
+
+    expect(login.status).toBe(200);
+
     const [bancos] = await db.query('SELECT DATABASE() AS nome');
 
     if (bancos[0].nome !== 'manutencao_piscinas_test') {
@@ -171,7 +181,7 @@ test('deve utilizar o banco de testes', async () => {
 
 // Listar agendamentos disponíveis
 test('deve listar agendamentos de hoje e não listar os futuros', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .get('/manutencoes/agendamentos');
 
     expect(resposta.status).toBe(200);
@@ -202,7 +212,7 @@ test('deve listar agendamentos de hoje e não listar os futuros', async () => {
 
 // Calcular dosagens usando os dados do agendamento
 test('deve calcular o volume e as dosagens da piscina', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/manutencoes/calcular')
         .send({
             idAgendamento: idAgendamentoHoje,
@@ -231,7 +241,7 @@ test('deve registrar a manutenção e descontar o estoque', async () => {
         [1000, idProdutoCloro]
     );
 
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/manutencoes/salvar')
         .send({
             idAgendamento: idAgendamentoHoje,
@@ -290,7 +300,7 @@ test('deve registrar a manutenção e descontar o estoque', async () => {
 
 // Impedir que o mesmo agendamento receba outra manutenção
 test('não deve registrar duas manutenções para o mesmo agendamento', async () => {
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/manutencoes/salvar')
         .send({
             idAgendamento: idAgendamentoHoje,
@@ -324,7 +334,7 @@ test('deve rejeitar estoque insuficiente sem gravar ou descontar produtos', asyn
         [1, idProdutoCloro]
     );
 
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/manutencoes/salvar')
         .send({
             idAgendamento: idAgendamentoEstoque,
@@ -373,7 +383,7 @@ test('deve rejeitar estoque insuficiente sem gravar ou descontar produtos', asyn
 
 // Impedir manutenção em agendamento futuro
 test('não deve calcular nem registrar manutenção de agendamento futuro', async () => {
-    const lista = await request(app)
+    const lista = await agente
         .get('/manutencoes/agendamentos');
 
     expect(lista.status).toBe(200);
@@ -384,7 +394,7 @@ test('não deve calcular nem registrar manutenção de agendamento futuro', asyn
         )
     ).toBe(false);
 
-    const resposta = await request(app)
+    const resposta = await agente
         .post('/manutencoes/salvar')
         .send({
             idAgendamento: idAgendamentoFuturo,

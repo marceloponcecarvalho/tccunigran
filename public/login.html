@@ -1,17 +1,39 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-BR">
 <head>
-    <title>Exemplo modulo formidable</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Manutenção de Piscinas</title>
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/js/login.js" defer></script>
 </head>
-
 <body>
-    <h1>Login</h1>
-    <form action="login" method="post" enctype="multipart/form-data">
-        <input type="text" name="login">
-        <input type="password" name="senha">
-        <input type="submit">
-    </form>
-</body>
+    <main>
+        <h1>Entrar no sistema</h1>
 
+        <form id="formLogin">
+            <label for="usuario">Nome de usuário</label>
+            <input
+                type="text"
+                id="usuario"
+                name="usuario"
+                autocomplete="username"
+                required
+            >
+
+            <label for="senha">Senha</label>
+            <input
+                type="password"
+                id="senha"
+                name="senha"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit">Entrar</button>
+        </form>
+
+        <p id="mensagem" class="mensagem" role="status"></p>
+    </main>
+</body>
 </html>
