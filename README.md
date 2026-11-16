@@ -26,23 +26,12 @@ O projeto utiliza MySQL em container Docker. A estrutura do banco é versionada 
 
 O container MySQL no docker compose executa os scripts de /docker-entrypoint-initdb.d/ somente quando inicializa um diretório de dados vazio. Alterações posteriores no schema.sql não são aplicadas automaticamente.
 
-O banco continua persistente mesmo que os containers sejam recriados. Se necessário, apagar o Banco.
+O banco continua persistente mesmo que os containers sejam recriados. 
 
-phpMyAdmin
-
-Porta 8080
-
-http://localhost:8080
-Credenciais:
-- Servidor: db
-- Usuário: piscinas
-- Senha: valor de MYSQL_PASSWORD
+Variáveis de ambientes devem ser definidas em .env - criar baseado em .env.example
 
 ### Teste de usabilidade:
 
 Teste de usabilidade com disponibilização de link para acesso a ambiente de testes e formulário google forms aos participantes.
-
-https://docs.google.com/forms/d/e/1FAIpQLSe2yh052lQjIkZgi-rczNoIUij4QpjNmIm-BOGfvOUupYW-1g/viewform?usp=header
-
 
 *Projeto acadêmico de Conclusão do Curso de Engenharia de Software — 2026.*
