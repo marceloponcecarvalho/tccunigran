@@ -1,0 +1,58 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: manutencao-piscinas-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Defina MYSQL_ROOT_PASSWORD no .env}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-manutencao_piscinas}
+      MYSQL_USER: ${MYSQL_USER:?Defina MYSQL_USER no .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Defina MYSQL_PASSWORD no .env}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -uroot -p"$${MYSQL_ROOT_PASSWORD}" --silent
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    networks:
+      - piscinas
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: manutencao-piscinas-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-manutencao_piscinas}
+      MYSQL_USER: ${MYSQL_USER:?Defina MYSQL_USER no .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Defina MYSQL_PASSWORD no .env}
+      SESSION_SECRET: ${SESSION_SECRET:?Defina SESSION_SECRET no .env}
+      AUTH_USER_FILE: /app/data/usuario.json
+      SESSION_FILE_STORE_PATH: /app/data/sessions
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./data/app:/app/data
+    networks:
+      - piscinas
+      - sharednet
+
+networks:
+  piscinas:
+    name: piscinas
+
+  sharednet:
+    name: mysharednetwork
