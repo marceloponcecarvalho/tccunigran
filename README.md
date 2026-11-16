@@ -38,4 +38,11 @@ Credenciais:
 - Usuário: piscinas
 - Senha: valor de MYSQL_PASSWORD
 
+### Teste de usabilidade:
+
+Teste de usabilidade com disponibilização de link para acesso a ambiente de testes e formulário google forms aos participantes.
+
+https://docs.google.com/forms/d/e/1FAIpQLSe2yh052lQjIkZgi-rczNoIUij4QpjNmIm-BOGfvOUupYW-1g/viewform?usp=header
+
+
 *Projeto acadêmico de Conclusão do Curso de Engenharia de Software — 2026.*

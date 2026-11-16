@@ -24,6 +24,7 @@ const { exigirAutenticacao } = require('./src/middlewares/authMiddleware');
 
 // criar o servidor http
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 if (!process.env.SESSION_SECRET) {
@@ -57,7 +58,7 @@ app.use(session({
     cookie: {
         httpOnly: true,
         sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
+        secure: 'auto',
         maxAge: 8 * 60 * 60 * 1000
     }
 }));

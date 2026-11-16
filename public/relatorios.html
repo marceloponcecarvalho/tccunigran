@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emitir Relatórios</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Manutenção de Piscinas - Emitir Relatórios</h1>
+    </header>
+
+    <main>
+
+        <section>
+            <h2>Tipo de relatório</h2>
+
+            <div class="botoes">
+                <button type="button" id="btnManutencoes">
+                    Manutenções mensais
+                </button>
+
+                <button type="button" id="btnConsumo">
+                    Consumo mensal de produtos
+                </button>
+
+                <button type="button" id="btnHistorico">
+                    Histórico de cliente
+                </button>
+
+                <button type="button" id="btnAgenda">
+                    Agenda dos próximos 30 dias
+                </button>
+            </div>
+        </section>
+
+        <div id="mensagem" role="status" aria-live="polite"></div>
+
+        <section id="filtroPeriodo" hidden>
+            <h2>Selecionar período</h2>
+
+            <div class="campo">
+                <label for="periodo">Mês e ano:</label>
+                <select id="periodo">
+                    <option value="">Carregando períodos...</option>
+                </select>
+            </div>
+
+            <button type="button" id="btnConsultarPeriodo">
+                Consultar relatório
+            </button>
+        </section>
+
+        <section id="filtroCliente" hidden>
+            <h2>Selecionar cliente</h2>
+
+            <div class="campo">
+                <label for="idCliente">Cliente:</label>
+                <select id="idCliente">
+                    <option value="">Carregando clientes...</option>
+                </select>
+            </div>
+
+            <button type="button" id="btnConsultarHistorico">
+                Consultar histórico
+            </button>
+        </section>
+
+        <section id="resultado" hidden>
+            <h2 id="tituloResultado"></h2>
+            <div id="conteudoResultado"></div>
+        </section>
+
+        <div class="botoes">
+            <button type="button" class="voltar"
+                onclick="window.location.href='index.html'">
+                Voltar ao menu
+            </button>
+        </div>
+
+    </main>
+
+    <script src="/js/relatorios.js" defer></script>
+
+</body>
+
+</html>
